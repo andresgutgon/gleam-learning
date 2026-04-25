@@ -14,14 +14,21 @@ Each phase is a branch from `main`. When complete, merge back to `main`.
 
 ## Phase 2: Docker + Postgres + Cigogne
 
-- [ ] Create `docker-compose.yml` with Postgres 17
-- [ ] Create `infra/initdb.sh` — enable `pg_trgm` extension
-- [ ] Add Cigogne as dev dependency
-- [ ] Create initial migration: `contacts` table with all fields + `stage` enum
-- [ ] Create `cigogne.toml` config pointing to Docker Postgres
-- [ ] Run `gleam run -m cigogne all` — verify migration applies
-- [ ] Run `gleam run -m cigogne down` + `gleam run -m cigogne all` — verify rollback/re-apply
-- [ ] Commit and merge to `main`
+- [x] Create `docker-compose.yml` with Postgres 17
+- [x] Create `infra/initdb.sh` — enable `pg_trgm` extension
+- [x] Add Cigogne as dev dependency
+- [x] Create `cigogne.toml` config pointing to Docker Postgres
+- [x] Add `just/migrations.just` for running migrations
+- [x] Create initial migration: `contacts` table with all fields + `stage` enum
+- [x] Run `gleam run -m cigogne all` — verify migration applies
+- [x] Run `gleam run -m cigogne down` + `gleam run -m cigogne all` — verify rollback/re-apply
+- [x] Create `docs/migrations.md` explaining how to use Cigogne for migrations
+- [x] Create `cigogne.toml` config pointing to Docker Postgres
+- [x] Add `just` to handle commands.
+- [x] Create initial migration: `contacts` table with all fields + `stage` enum
+- [x] Run `gleam run -m cigogne all` — verify migration applies
+- [x] Run `gleam run -m cigogne down` + `gleam run -m cigogne all` — verify rollback/re-apply
+- [ ] Starts docs/*.md folder with a migrations.md explaining how to use Cigogne for migrations
 
 ## Phase 3: Squirrel + DB queries
 
