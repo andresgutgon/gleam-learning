@@ -1,7 +1,8 @@
 set dotenv-load
 
 mod migrations "just/migrations.just"
+mod squirrel "just/squirrel.just"
 
-# List all recipes (default when running `just`)
 default:
   @just --list --list-submodules
+

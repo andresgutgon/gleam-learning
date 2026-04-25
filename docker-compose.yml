@@ -7,6 +7,7 @@ services:
       POSTGRES_DB: ${POSTGRES_DB}
       PGUSER: ${POSTGRES_USER}
       PGDATABASE: ${POSTGRES_DB}
+      PGPASSWORD: ${PGPASSWORD}
     ports:
       - "${POSTGRES_PORT:-5432}:5432"
     volumes:

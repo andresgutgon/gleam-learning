@@ -26,9 +26,3 @@ new name:
 # Run any cigogne command not covered above
 cigogne *args:
     gleam run -m cigogne {{args}}
-
-debug-env:
-    @echo "DATABASE_URL=$DATABASE_URL"
-    @echo "PWD=$(pwd)"
-    @ls gleam.toml && echo "gleam.toml found" || echo "gleam.toml MISSING"
-    @grep '^name' gleam.toml 2>/dev/null || echo "no name field"
