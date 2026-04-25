@@ -4,12 +4,12 @@ Each phase is a branch from `main`. When complete, merge back to `main`.
 
 ## Phase 1: Hello World — Wisp server
 
-- [ ] Initialize Gleam project (`gleam new`)
-- [ ] Add Wisp + Mist + wisp_mist dependencies
-- [ ] Create `app.gleam` entrypoint — start Mist server on port 8000
-- [ ] Create `app/router.gleam` — single route returning "Hello CRM" HTML
-- [ ] Create `app/web.gleam` — middleware stack (logging, crash rescue, HEAD)
-- [ ] Run server, verify `http://localhost:8000` shows the page
+- [x] Initialize Gleam project (`gleam new`)
+- [x] Add Wisp + Mist + wisp_mist dependencies
+- [x] Create `app.gleam` entrypoint — start Mist server on port 8000
+- [x] Create `app/router.gleam` — single route returning "Hello CRM" HTML
+- [x] Create `app/web.gleam` — middleware stack (logging, crash rescue, HEAD)
+- [x] Run server, verify `http://localhost:8000` shows the page
 - [ ] Commit and merge to `main`
 
 ## Phase 2: Docker + Postgres + Cigogne
