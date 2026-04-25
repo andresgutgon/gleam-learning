@@ -1,0 +1,6 @@
+[migration-table]
+schema = "public"
+table = "_migrations"
+
+[migrations]
+migration_folder = "migrations"
