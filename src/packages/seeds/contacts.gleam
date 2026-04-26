@@ -24,8 +24,8 @@ const job_titles = [
   "Software Engineer", "Product Manager", "Sales Director", "VP of Engineering",
   "Marketing Manager", "Data Analyst", "Account Executive", "CTO",
   "Operations Manager", "Business Analyst", "Customer Success Manager",
-  "Frontend Developer", "Backend Developer", "DevOps Engineer",
-  "UX Designer", "Content Strategist", "HR Manager", "Finance Director",
+  "Frontend Developer", "Backend Developer", "DevOps Engineer", "UX Designer",
+  "Content Strategist", "HR Manager", "Finance Director",
   "Chief Revenue Officer", "Technical Lead",
 ]
 
@@ -44,10 +44,13 @@ type SeedContact {
 }
 
 pub fn seed(db: pog.Connection) -> Result(Nil, String) {
-  io.println("🌱 Seeding " <> int.to_string(seed_contact_count) <> " contacts...")
+  io.println(
+    "🌱 Seeding " <> int.to_string(seed_contact_count) <> " contacts...",
+  )
 
   // Generate all contacts
-  let contacts = generate_range(1, seed_contact_count + 1, [])
+  let contacts =
+    generate_range(1, seed_contact_count + 1, [])
     |> list.map(generate_contact)
 
   // Insert or update contacts
@@ -73,7 +76,9 @@ fn generate_range(from: Int, to: Int, acc: List(Int)) -> List(Int) {
 
 fn generate_contact(index: Int) -> SeedContact {
   let email =
-    "contact_" <> string.pad_start(int.to_string(index), 3, "0") <> "@seed.local"
+    "contact_"
+    <> string.pad_start(int.to_string(index), 3, "0")
+    <> "@seed.local"
 
   // Deterministically cycle through companies and titles
   let company_index = { index - 1 } % list.length(companies)

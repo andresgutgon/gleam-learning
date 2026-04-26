@@ -20,7 +20,7 @@ pub fn load_dotenv(filepath: String) -> Result(Nil, String) {
 
 fn parse_and_set_line(line: String) -> Nil {
   let line = string.trim(line)
-  
+
   // Skip empty lines and comments
   case line {
     "" -> Nil

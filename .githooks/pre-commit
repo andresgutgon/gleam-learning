@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Format Gleam code before committing
+echo "🎨 Formatting Gleam code..."
+
+if ! gleam format src test; then
+  echo "❌ Formatting failed"
+  exit 1
+fi
+
+# Stage any changes made by the formatter
+git add src test
+
+echo "✅ Code formatted successfully"

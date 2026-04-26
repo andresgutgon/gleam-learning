@@ -33,9 +33,7 @@ pub fn handle_request(
       // Return a debug response to see what path we got
       wisp.response(404)
       |> wisp.html_body(
-        "<h1>404 Not Found</h1><p>Path: "
-        <> string.inspect(other)
-        <> "</p>",
+        "<h1>404 Not Found</h1><p>Path: " <> string.inspect(other) <> "</p>",
       )
     }
   }
@@ -89,8 +87,7 @@ fn contact_page(
   case int.parse(id) {
     Ok(contact_id) -> {
       case config.contacts_repo.get(contact_id) {
-        Ok(contact) ->
-          wisp.ok() |> wisp.html_body(contact_detail_html(contact))
+        Ok(contact) -> wisp.ok() |> wisp.html_body(contact_detail_html(contact))
         Error(NotFound(_)) -> wisp.not_found()
         Error(_) -> wisp.internal_server_error()
       }

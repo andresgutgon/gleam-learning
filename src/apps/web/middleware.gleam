@@ -2,7 +2,6 @@ import gleam/http/request.{type Request}
 import wisp
 import wisp/internal
 
-
 pub fn middleware(
   req: Request(internal.Connection),
   handle_request: fn(Request(internal.Connection)) -> wisp.Response,
