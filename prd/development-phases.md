@@ -32,9 +32,11 @@ Each phase is a branch from `main`. When complete, merge back to `main`.
 - [x] Implement mock adapter for contacts repository (`src/domain/contacts/mock_repository.gleam`)
 - [x] Create `src/platform/env.gleam` for environment variable loading (critical vs optional)
 - [x] Configure dependency injection in `src/crm.gleam` to use the `pog` adapter, reading DB URL from `platform/env`
+
 ## Phase 4: Seed data (300 contacts)
 
 ### Code Organization
+
 - [x] Create `src/packages/seeds/` package directory
 - [x] Seeds package will use `src/packages/platform/postgresql` for DB operations
 - [x] Seeds should be idempotent - running twice shouldn't create duplicates (600 contacts)
@@ -42,6 +44,7 @@ Each phase is a branch from `main`. When complete, merge back to `main`.
 - [x] On re-run: UPDATE existing contacts or skip if already exists (check by email)
 
 ### Data Generation
+
 - [x] Create seed module using `blah` for realistic names/emails
 - [x] Use deterministic approach: Generate emails like `contact_001@seed.local` through `contact_300@seed.local`
 - [x] Define company list (~20 items) - cycle through companies deterministically
@@ -50,12 +53,14 @@ Each phase is a branch from `main`. When complete, merge back to `main`.
 - [x] Distribute contacts across all pipeline stages evenly
 
 ### Bulk Operations
+
 - [x] Investigate if pog/squirrel supports bulk INSERT operations
 - [x] If bulk available: implement batch insert (e.g., 50 contacts at a time)
 - [x] If no bulk: implement efficient single inserts with transaction batching
 - [x] Add upsert logic: ON CONFLICT (email) DO UPDATE or manual check-then-insert
 
 ### Command Execution
+
 - [x] Create `just/seeds.just` file with seed commands
 - [x] Investigate Gleam CLI custom commands (can we run `gleam run -m seeds`?)
 - [x] Alternative: Create standalone script that compiles and runs seed module
@@ -64,6 +69,7 @@ Each phase is a branch from `main`. When complete, merge back to `main`.
 - [x] Add db-reset command for full reset (drop, create, migrate, seed)
 
 ### Verification
+
 - [x] Run seed command — verify exactly 300 rows in DB
 - [x] Run seed command again — verify still only 300 rows (idempotency)
 - [x] Verify data quality: all required fields populated, valid pipeline stages
@@ -71,9 +77,10 @@ Each phase is a branch from `main`. When complete, merge back to `main`.
 - [ ] Commit and merge to `main`
 
 ## Phase 4.1: Unit tests for postgreSQL repository
+
 - [ ] Add `gleam_test` dev dependency
 - [ ] Investigate factories for test data generation in Gleam community for pog
-or with squirrel. If none, create simple helper functions in `contacts_test.gleam` to generate test contacts.
+      or with squirrel. If none, create simple helper functions in `contacts_test.gleam` to generate test contacts.
 - [ ] Create `src/platform/postgresql/repositories/contacts_test.gleam`
 - [ ] Write tests for `list_contacts` with various filters, sorting, pagination
 - [ ] Write tests for `get_contact`, `create_contact`, `update_contact`, `delete_contact`
@@ -96,37 +103,62 @@ or with squirrel. If none, create simple helper functions in `contacts_test.glea
 - [ ] Create `assets/theme.css` with HSL variables (light + dark)
 - [ ] Create `assets/style.css` with `@import "tailwindcss"` + `@theme` block
 - [ ] Configure `gleam.toml` for lustre_dev_tools
+- [ ] This components should live in `src/packages/ui`. I want to do it in a
+    way that in the future can be extacted to a separate package. For do something
+    like shadcn-ui but for Gleam. So let's thing all of then in two parts.
+    primitive headless unstyled and styled with tailwind and using theme variables.
 - [ ] Build shadcn-style base components:
   - [ ] `button.gleam` — with variants (Default, Destructive, Outline, Secondary, Ghost, Link)
   - [ ] `input.gleam` — styled input
-  - [ ] `table.gleam` — table, header, row, cell
+  - [ ] `table.gleam` — table, header, row, cell, sorting indicators.
+  - [ ] Investigate what's the best way of using an icon library in Gleam. What
+        are the alternatives? Is there something like lucide icons?
   - [ ] `badge.gleam` — pipeline stage badges
+  - [ ] Build `src/ui/popover.gleam` — CSS anchor positioning, outside click close
 - [ ] Style the contacts list table using components
 - [ ] Add dark mode toggle (server component emit + client JS)
 - [ ] Verify: styled table, dark mode works
-- [ ] Commit and merge to `main`
 
-## Phase 7: Navigation
+## Phase 7: Contacts list view - Infinite pagination, sorting
+- [ ] Implement `list_contacts` with pagination, sorting, filtering in repository
+- [ ] Add search input with debounce (Lustre built-in throttling)
+- [ ] Add pipeline stage filter dropdown (Popover)
+- [ ] Add company filter dropdown (Popover)
+- [ ] Add sortable column headers (click to toggle asc/desc)
+- [ ] Implement cursor-based pagination — load 50, scroll to load more
+- [ ] Changing filters/sort resets list
+- [ ] Verify: search works, filters combine, sort toggles, infinite scroll loads more
 
+## Phase 7.1: Virtualized list for performance
+- [ ] Investigate virtualized list implementations for Lustre or general JS libraries that can be integrated
+- [ ] Implement virtualized list in contacts view to handle large datasets efficiently
+- [ ] Verify: smooth scrolling and rendering with 300+ contacts, no performance issues
+- [ ] How to do windowing/virtualization with server components? We can do it with client JS, but is there a way to do it with Lustre components? Maybe we can implement a `VirtualList` component that only renders visible items and emits events for loading more as the user scrolls. Let's research best practices for this in the context of server components. Add a new `./prd/virtualized-list.md` document to explore this topic in depth.
+
+## Phase 8: Navigation
+
+- [ ] Before nothing let's reconsidere a refactor in the router. Now contacts
+      query client and repo is initialized in the crm.gleam. Is a bit weird full app
+      knows a specific route. Let's see what community recommends for organizing
+      lustre server component apps with multiple routes. Maybe we can move the router to a separate package and make it more agnostic.
 - [ ] Implement `Route` type with `ContactsList` and `ContactDetail(id)` variants
 - [ ] Add `NavigateTo` and `UrlChanged` messages (separate to avoid infinite loop)
 - [ ] Add hidden `<input>` for navigation communication
-- [ ] Create `src/js/navigation.js` (~90 lines) — link click intercept, popstate, pushState
+- [ ] Create `src/js/navigation.js` (~90 lines) — link click intercept, popstate, pushState. Before doing this check if there is already some library that make client side navigation for an app that works with server components. If there is, use it. If not, implement it.
 - [ ] Implement `view` pattern matching on route
 - [ ] Wisp catch-all route serves same HTML shell, passes initial URL as flags
 - [ ] Verify: click contact → detail page, back button → list, URL bar updates
 - [ ] Commit and merge to `main`
 
-## Phase 8: Popover + Modal components
+## Phase 9: Popover + Modal components
 
-- [ ] Build `src/ui/popover.gleam` — CSS anchor positioning, outside click close
 - [ ] Build `src/ui/modal.gleam` — native `<dialog>`, `showModal()` via emit + client JS
 - [ ] Build `src/ui/field.gleam` — label + input + error message
 - [ ] Integrate 3-dot action menu in table rows (Popover)
 - [ ] Verify: click ⋮ → menu opens, click outside → closes
 - [ ] Commit and merge to `main`
 
-## Phase 9: CRUD — Create, Edit, Delete
+## Phase 10: CRUD — Create, Edit, Delete
 
 - [ ] Implement create contact — "New Contact" button opens Modal with form
 - [ ] Implement edit contact — Modal with pre-filled form
@@ -137,7 +169,7 @@ or with squirrel. If none, create simple helper functions in `contacts_test.glea
 - [ ] Verify: create, edit (with validation), delete, move all work
 - [ ] Commit and merge to `main`
 
-## Phase 10: Filtering, sorting, infinite scroll
+## Phase 11: Filtering, sorting, infinite scroll
 
 - [ ] Add search input with debounce (Lustre built-in throttling)
 - [ ] Add pipeline stage filter dropdown (Popover)
@@ -148,8 +180,9 @@ or with squirrel. If none, create simple helper functions in `contacts_test.glea
 - [ ] Verify: search works, filters combine, sort toggles, infinite scroll loads more
 - [ ] Commit and merge to `main`
 
-## Phase 11: Profile picture upload
+## Phase 12: Profile picture upload
 
+- [ ] Add data model for avatar URL in `contacts` table (nullable)
 - [ ] Add `upload-avatar` Wisp route (HTTP POST, `require_form`)
 - [ ] Save files with `simplifile`, generate unique filenames
 - [ ] Create OTP `Subject` for upload notifications in component init
@@ -158,12 +191,12 @@ or with squirrel. If none, create simple helper functions in `contacts_test.glea
 - [ ] Display avatar in contact row and detail page
 - [ ] Serve uploaded files via Wisp `serve_static`
 - [ ] Verify: upload picture → avatar appears in list
-- [ ] Commit and merge to `main`
+- [ ] Once this simple updload works. Do a research in `./prd/active-storge.md` about how to implement an active storage like solution in Gleam. Maybe we can create a separate package for file storage that can support multiple backends (local, S3, etc) and has features like direct uploads, variants, etc.
 
-## Phase 12: Contact detail page
+## Phase 13: Contact detail page
 
 - [ ] Implement `ContactDetail` route view — full contact info
 - [ ] Reuse same Modal components for edit, delete, add note
 - [ ] Add notes section — list + add new note
 - [ ] Verify: navigate to detail, all actions work, notes display
-- [ ] Commit and merge to `main`
+- [ ] Verify browser back/forward works correctly with navigation
