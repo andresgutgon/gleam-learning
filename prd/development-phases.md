@@ -74,17 +74,43 @@ Each phase is a branch from `main`. When complete, merge back to `main`.
 - [x] Run seed command again — verify still only 300 rows (idempotency)
 - [x] Verify data quality: all required fields populated, valid pipeline stages
 - [x] Verify distribution: contacts spread across companies, titles, and pipeline stages
-- [ ] Commit and merge to `main`
+- [x] Commit and merge to `main`
 
-## Phase 4.1: Unit tests for postgreSQL repository
+## Phase 4.1: Unit tests for PostgreSQL repository
 
-- [ ] Add `gleam_test` dev dependency
-- [ ] Investigate factories for test data generation in Gleam community for pog
-      or with squirrel. If none, create simple helper functions in `contacts_test.gleam` to generate test contacts.
-- [ ] Create `src/platform/postgresql/repositories/contacts_test.gleam`
-- [ ] Write tests for `list_contacts` with various filters, sorting, pagination
-- [ ] Write tests for `get_contact`, `create_contact`, `update_contact`, `delete_contact`
-- [ ] Run tests, verify all pass
+### Implementation Complete ✅
+
+- [x] Test database setup (`gleam_learning_test`) with `.env.test` configuration
+- [x] Transaction-based rollback strategy for test isolation (`test/support/db.gleam`)
+- [x] GitHub Actions CI workflow with PostgreSQL 16 service container
+- [x] Factory pattern implementation (`test/factories/contact.gleam`) with builder-style API
+- [x] Test commands via just (`just/test.just`: setup, teardown, migrate, reset, test)
+- [x] Comprehensive repository tests (`test/packages/platform/postgresql/repositories/contacts_test.gleam`):
+  - [x] **Get contact**: success case, not found error
+  - [x] **Create contact**: basic fields, all optional fields  
+  - [x] **Update contact**: success case, not found error
+  - [x] **Delete contact**: success case, not found error
+  - [x] **List contacts** - filtering:
+    - [x] Empty list
+    - [x] Return all contacts
+    - [x] Filter by pipeline stage (lead, customer, etc.)
+    - [x] Filter by company (partial match with ILIKE)
+    - [x] Filter by search term (first name, last name, email, company)
+  - [x] **List contacts** - sorting:
+    - [x] Sort by first name (ascending)
+    - [x] Sort by email (descending)
+  - [x] **List contacts** - pagination:
+    - [x] Limit results
+    - [ ] Cursor-based pagination (TODO: requires SQL implementation)
+
+### Verification
+
+- [x] `gleam test` runs successfully with 16/16 tests passing
+- [x] Tests use transaction rollback for isolation (parallel-safe)
+- [x] Factory pattern working for test data generation
+- [x] GitHub Actions workflow configured (will run on PR)
+- [x] Test database provisioning documented in `just/test.just`
+- [x] All tests independent and can run in parallel
 
 ## Phase 5: Lustre server component — static list
 
