@@ -87,7 +87,7 @@ Each phase is a branch from `main`. When complete, merge back to `main`.
 - [x] Test commands via just (`just/test.just`: setup, teardown, migrate, reset, test)
 - [x] Comprehensive repository tests (`test/packages/platform/postgresql/repositories/contacts_test.gleam`):
   - [x] **Get contact**: success case, not found error
-  - [x] **Create contact**: basic fields, all optional fields  
+  - [x] **Create contact**: basic fields, all optional fields
   - [x] **Update contact**: success case, not found error
   - [x] **Delete contact**: success case, not found error
   - [x] **List contacts** - filtering:
@@ -101,7 +101,9 @@ Each phase is a branch from `main`. When complete, merge back to `main`.
     - [x] Sort by email (descending)
   - [x] **List contacts** - pagination:
     - [x] Limit results
-    - [ ] Cursor-based pagination (TODO: requires SQL implementation)
+
+### Phase 4.2: Advanced repository features
+  - [ ] Cursor-based pagination (TODO: requires SQL implementation)
 
 ### Verification
 
