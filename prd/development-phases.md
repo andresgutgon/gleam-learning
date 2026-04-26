@@ -102,9 +102,6 @@ Each phase is a branch from `main`. When complete, merge back to `main`.
   - [x] **List contacts** - pagination:
     - [x] Limit results
 
-### Phase 4.2: Advanced repository features
-  - [ ] Cursor-based pagination (TODO: requires SQL implementation)
-
 ### Verification
 
 - [x] `gleam test` runs successfully with 16/16 tests passing
@@ -113,6 +110,9 @@ Each phase is a branch from `main`. When complete, merge back to `main`.
 - [x] GitHub Actions workflow configured (will run on PR)
 - [x] Test database provisioning documented in `just/test.just`
 - [x] All tests independent and can run in parallel
+
+### Phase 4.2: Advanced repository features
+  - [ ] Cursor-based pagination (TODO: requires SQL implementation)
 
 ## Phase 5: Lustre server component — static list
 
