@@ -1,5 +1,5 @@
 //// This module contains the code to run the sql queries defined in
-//// `./src/sql`.
+//// `./src/packages/platform/postgresql/repositories/contacts/sql`.
 //// > 🐿️ This module was generated automatically using v4.6.0 of
 //// > the [squirrel package](https://github.com/giacomocavalieri/squirrel).
 ////
@@ -10,7 +10,7 @@ import gleam/time/timestamp.{type Timestamp}
 import pog
 
 /// A row you get from running the `count_contacts` query
-/// defined in `./src/sql/count_contacts.sql`.
+/// defined in `./src/packages/platform/postgresql/repositories/contacts/sql/count_contacts.sql`.
 ///
 /// > 🐿️ This type definition was generated automatically using v4.6.0 of the
 /// > [squirrel package](https://github.com/giacomocavalieri/squirrel).
@@ -44,7 +44,7 @@ FROM
 }
 
 /// A row you get from running the `create_contact` query
-/// defined in `./src/sql/create_contact.sql`.
+/// defined in `./src/packages/platform/postgresql/repositories/contacts/sql/create_contact.sql`.
 ///
 /// > 🐿️ This type definition was generated automatically using v4.6.0 of the
 /// > [squirrel package](https://github.com/giacomocavalieri/squirrel).
@@ -165,7 +165,7 @@ updated_at::timestamp;
 }
 
 /// A row you get from running the `delete_contact` query
-/// defined in `./src/sql/delete_contact.sql`.
+/// defined in `./src/packages/platform/postgresql/repositories/contacts/sql/delete_contact.sql`.
 ///
 /// > 🐿️ This type definition was generated automatically using v4.6.0 of the
 /// > [squirrel package](https://github.com/giacomocavalieri/squirrel).
@@ -202,7 +202,7 @@ RETURNING id;
 }
 
 /// A row you get from running the `get_contact` query
-/// defined in `./src/sql/get_contact.sql`.
+/// defined in `./src/packages/platform/postgresql/repositories/contacts/sql/get_contact.sql`.
 ///
 /// > 🐿️ This type definition was generated automatically using v4.6.0 of the
 /// > [squirrel package](https://github.com/giacomocavalieri/squirrel).
@@ -289,7 +289,7 @@ WHERE
 }
 
 /// A row you get from running the `list_contacts` query
-/// defined in `./src/sql/list_contacts.sql`.
+/// defined in `./src/packages/platform/postgresql/repositories/contacts/sql/list_contacts.sql`.
 ///
 /// > 🐿️ This type definition was generated automatically using v4.6.0 of the
 /// > [squirrel package](https://github.com/giacomocavalieri/squirrel).
@@ -394,12 +394,12 @@ SELECT
 FROM contacts
 WHERE
   -- Filtering
-  (stage::text = $1 OR $1 IS NULL) AND
-  (company ILIKE '%' || $2 || '%' OR $2 IS NULL) AND
-  (first_name ILIKE '%' || $3 || '%' OR last_name ILIKE '%' || $3 || '%' OR email ILIKE '%' || $3 || '%' OR company ILIKE '%' || $3 || '%' OR $3 IS NULL) AND
-  (email ILIKE '%' || $4 || '%' OR $4 IS NULL) AND
-  (phone ILIKE '%' || $5 || '%' OR $5 IS NULL) AND
-  (title ILIKE '%' || $6 || '%' OR $6 IS NULL) AND
+  (stage::text = $1 OR $1 = '') AND
+  (company ILIKE '%' || $2 || '%' OR $2 = '') AND
+  (first_name ILIKE '%' || $3 || '%' OR last_name ILIKE '%' || $3 || '%' OR email ILIKE '%' || $3 || '%' OR company ILIKE '%' || $3 || '%' OR $3 = '') AND
+  (email ILIKE '%' || $4 || '%' OR $4 = '') AND
+  (phone ILIKE '%' || $5 || '%' OR $5 = '') AND
+  (title ILIKE '%' || $6 || '%' OR $6 = '') AND
   
   -- Keyset pagination (skip for now since cursor_value can't be NULL)
   TRUE
@@ -434,7 +434,7 @@ LIMIT $9;
 }
 
 /// A row you get from running the `update_contact` query
-/// defined in `./src/sql/update_contact.sql`.
+/// defined in `./src/packages/platform/postgresql/repositories/contacts/sql/update_contact.sql`.
 ///
 /// > 🐿️ This type definition was generated automatically using v4.6.0 of the
 /// > [squirrel package](https://github.com/giacomocavalieri/squirrel).

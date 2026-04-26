@@ -23,6 +23,19 @@ show:
 new name:
     gleam run -m cigogne new {{name}}
 
+# Reset database (drop, create, apply all migrations)
+reset:
+    @echo "🔄 Resetting database..."
+    @echo "⚠️  Warning: This will drop the database and terminate all connections!"
+    docker compose exec -T db psql -U ${POSTGRES_USER} -d postgres -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = '${POSTGRES_DB}' AND pid <> pg_backend_pid();" > /dev/null 2>&1 || true
+    sleep 1
+    docker compose exec -T db dropdb -U ${POSTGRES_USER} --if-exists --force ${POSTGRES_DB}
+    docker compose exec -T db createdb -U ${POSTGRES_USER} ${POSTGRES_DB}
+    docker compose exec -T db psql -U ${POSTGRES_USER} -d ${POSTGRES_DB} -c "CREATE EXTENSION IF NOT EXISTS pg_trgm;"
+    @echo "✅ Database reset complete"
+    gleam run -m cigogne all
+    @echo "✅ Migrations applied"
+
 # Run any cigogne command not covered above
 cigogne *args:
     gleam run -m cigogne {{args}}
