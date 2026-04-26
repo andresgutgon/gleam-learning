@@ -34,11 +34,40 @@ Each phase is a branch from `main`. When complete, merge back to `main`.
 - [x] Configure dependency injection in `src/crm.gleam` to use the `pog` adapter, reading DB URL from `platform/env`
 ## Phase 4: Seed data (300 contacts)
 
-- [ ] Create `seed.gleam` module using `blah` for names/emails
-- [ ] Define company list (~20 items) and job title list (~20 items)
-- [ ] Generate random phone numbers
-- [ ] Insert 300 contacts with varied pipeline stages
-- [ ] Run seed module — verify 300 rows in DB
+### Code Organization
+- [x] Create `src/packages/seeds/` package directory
+- [x] Seeds package will use `src/packages/platform/postgresql` for DB operations
+- [x] Seeds should be idempotent - running twice shouldn't create duplicates (600 contacts)
+- [x] Strategy: Use deterministic email addresses (e.g., contact_001@seed.local) as unique keys
+- [x] On re-run: UPDATE existing contacts or skip if already exists (check by email)
+
+### Data Generation
+- [x] Create seed module using `blah` for realistic names/emails
+- [x] Use deterministic approach: Generate emails like `contact_001@seed.local` through `contact_300@seed.local`
+- [x] Define company list (~20 items) - cycle through companies deterministically
+- [x] Define job title list (~20 items) - cycle through titles deterministically
+- [x] Generate random but deterministic phone numbers (seed-based randomness)
+- [x] Distribute contacts across all pipeline stages evenly
+
+### Bulk Operations
+- [x] Investigate if pog/squirrel supports bulk INSERT operations
+- [x] If bulk available: implement batch insert (e.g., 50 contacts at a time)
+- [x] If no bulk: implement efficient single inserts with transaction batching
+- [x] Add upsert logic: ON CONFLICT (email) DO UPDATE or manual check-then-insert
+
+### Command Execution
+- [x] Create `just/seeds.just` file with seed commands
+- [x] Investigate Gleam CLI custom commands (can we run `gleam run -m seeds`?)
+- [x] Alternative: Create standalone script that compiles and runs seed module
+- [ ] Command should accept flags: `--reset` to clear before seeding, `--count N` for custom contact count
+- [x] Integrate into justfile: `just seed` or `just seed-reset`
+- [ ] Add db-reset command for full reset (drop, create, migrate, seed)
+
+### Verification
+- [x] Run seed command — verify exactly 300 rows in DB
+- [x] Run seed command again — verify still only 300 rows (idempotency)
+- [x] Verify data quality: all required fields populated, valid pipeline stages
+- [x] Verify distribution: contacts spread across companies, titles, and pipeline stages
 - [ ] Commit and merge to `main`
 
 ## Phase 4.1: Unit tests for postgreSQL repository

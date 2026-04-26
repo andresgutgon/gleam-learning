@@ -5,6 +5,10 @@ version = "1.0.0"
   name = "crm_server"
   module = "crm" # Main entry point is src/crm.gleam
 
+[[applications]]
+  name = "seeds"
+  module = "packages/seeds"
+
 [dependencies]
 gleam_stdlib = ">= 1.0.0 and < 2.0.0"
 wisp = ">= 2.2.2 and < 3.0.0"
@@ -17,8 +21,8 @@ gleam_time = ">= 1.8.0 and < 2.0.0"
 envoy = ">= 1.2.0 and < 2.0.0"
 gleam_otp = ">= 1.2.0 and < 2.0.0"
 simplifile = ">= 2.4.0 and < 3.0.0"
+blah = ">= 1.4.0 and < 2.0.0"
 
 [dev-dependencies]
 gleeunit = ">= 1.0.0 and < 2.0.0"
 cigogne = ">= 5.0.6 and < 6.0.0"
-blah = ">= 1.4.0 and < 2.0.0"

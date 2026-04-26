@@ -394,12 +394,12 @@ SELECT
 FROM contacts
 WHERE
   -- Filtering
-  (stage::text = $1 OR $1 IS NULL) AND
-  (company ILIKE '%' || $2 || '%' OR $2 IS NULL) AND
-  (first_name ILIKE '%' || $3 || '%' OR last_name ILIKE '%' || $3 || '%' OR email ILIKE '%' || $3 || '%' OR company ILIKE '%' || $3 || '%' OR $3 IS NULL) AND
-  (email ILIKE '%' || $4 || '%' OR $4 IS NULL) AND
-  (phone ILIKE '%' || $5 || '%' OR $5 IS NULL) AND
-  (title ILIKE '%' || $6 || '%' OR $6 IS NULL) AND
+  (stage::text = $1 OR $1 = '') AND
+  (company ILIKE '%' || $2 || '%' OR $2 = '') AND
+  (first_name ILIKE '%' || $3 || '%' OR last_name ILIKE '%' || $3 || '%' OR email ILIKE '%' || $3 || '%' OR company ILIKE '%' || $3 || '%' OR $3 = '') AND
+  (email ILIKE '%' || $4 || '%' OR $4 = '') AND
+  (phone ILIKE '%' || $5 || '%' OR $5 = '') AND
+  (title ILIKE '%' || $6 || '%' OR $6 = '') AND
   
   -- Keyset pagination (skip for now since cursor_value can't be NULL)
   TRUE
