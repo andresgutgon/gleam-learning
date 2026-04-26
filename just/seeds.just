@@ -4,9 +4,7 @@
 seed:
     gleam run -m packages/seeds
 
-# TODO: Reset database and seed (drop, create, migrate, seed)
-# Requires db-reset command to be implemented
+# Reset database and seed (drop, create, migrate, seed)
 seed-reset:
-    @echo "TODO: Implement db-reset command (drop DB, create DB, apply migrations)"
-    @echo "For now, run: just migrations::last && just seeds::seed"
+    just migrations::reset
     gleam run -m packages/seeds

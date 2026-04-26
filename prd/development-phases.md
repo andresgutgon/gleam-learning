@@ -61,7 +61,7 @@ Each phase is a branch from `main`. When complete, merge back to `main`.
 - [x] Alternative: Create standalone script that compiles and runs seed module
 - [ ] Command should accept flags: `--reset` to clear before seeding, `--count N` for custom contact count
 - [x] Integrate into justfile: `just seed` or `just seed-reset`
-- [ ] Add db-reset command for full reset (drop, create, migrate, seed)
+- [x] Add db-reset command for full reset (drop, create, migrate, seed)
 
 ### Verification
 - [x] Run seed command — verify exactly 300 rows in DB
