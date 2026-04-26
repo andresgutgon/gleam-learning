@@ -6,9 +6,9 @@ Each phase is a branch from `main`. When complete, merge back to `main`.
 
 - [x] Initialize Gleam project (`gleam new`)
 - [x] Add Wisp + Mist + wisp_mist dependencies
-- [x] Create `app.gleam` entrypoint — start Mist server on port 8000
-- [x] Create `app/router.gleam` — single route returning "Hello CRM" HTML
-- [x] Create `app/web.gleam` — middleware stack (logging, crash rescue, HEAD)
+- [x] Create `src/crm.gleam` entrypoint — start Mist server on port 8000
+- [x] Create `src/apps/web/router.gleam` — single route returning "Hello CRM" HTML
+- [x] Create `src/apps/web/middleware.gleam` — middleware stack (logging, crash rescue, HEAD)
 - [x] Run server, verify `http://localhost:8000` shows the page
 - [ ] Commit and merge to `main`
 
@@ -17,33 +17,21 @@ Each phase is a branch from `main`. When complete, merge back to `main`.
 - [x] Create `docker-compose.yml` with Postgres 17
 - [x] Create `infra/initdb.sh` — enable `pg_trgm` extension
 - [x] Add Cigogne as dev dependency
-- [x] Create `cigogne.toml` config pointing to Docker Postgres
+- [x] Create `priv/cigogne.toml` config pointing to Docker Postgres
 - [x] Add `just/migrations.just` for running migrations
-- [x] Create initial migration: `contacts` table with all fields + `stage` enum
+- [x] Create initial migration: `contacts` table with all fields + `stage` enum and `TIMESTAMPTZ`
 - [x] Run `gleam run -m cigogne all` — verify migration applies
 - [x] Run `gleam run -m cigogne down` + `gleam run -m cigogne all` — verify rollback/re-apply
 - [x] Create `docs/migrations.md` explaining how to use Cigogne for migrations
-- [x] Create `cigogne.toml` config pointing to Docker Postgres
-- [x] Add `just` to handle commands.
-- [x] Create initial migration: `contacts` table with all fields + `stage` enum
-- [x] Run `gleam run -m cigogne all` — verify migration applies
-- [x] Run `gleam run -m cigogne down` + `gleam run -m cigogne all` — verify rollback/re-apply
-- [ ] Starts docs/*.md folder with a migrations.md explaining how to use Cigogne for migrations
+- [x] Commit and merge to `main`
 
-## Phase 3: Squirrel + DB queries
+## Phase 3: Repository Pattern — Abstract DB operations
 
-- [ ] Add Squirrel + pog as dependencies
-- [ ] Add `blah` as dev dependency for seed data
-- [ ] Create `src/sql/` directory with SQL query files:
-  - [ ] `list_contacts.sql` — cursor-based pagination with filters + sort
-  - [ ] `get_contact.sql` — single contact by ID
-  - [ ] `create_contact.sql` — insert new contact
-  - [ ] `update_contact.sql` — update contact fields
-  - [ ] `delete_contact.sql` — delete by ID
-  - [ ] `count_contacts.sql` — total count for "has_more" check
-- [ ] Run `gleam run -m squirrel` — verify Gleam code generation
-- [ ] Commit and merge to `main`
-
+- [x] Define abstract repository interfaces for contacts (ports) in `src/packages/domain/contacts/repository.gleam`
+- [x] Implement `pog` adapter for contacts repository (`src/platform/postgresql/repositories/contacts.gleam`)
+- [x] Implement mock adapter for contacts repository (`src/domain/contacts/mock_repository.gleam`)
+- [x] Create `src/platform/env.gleam` for environment variable loading (critical vs optional)
+- [x] Configure dependency injection in `src/crm.gleam` to use the `pog` adapter, reading DB URL from `platform/env`
 ## Phase 4: Seed data (300 contacts)
 
 - [ ] Create `seed.gleam` module using `blah` for names/emails
@@ -52,6 +40,15 @@ Each phase is a branch from `main`. When complete, merge back to `main`.
 - [ ] Insert 300 contacts with varied pipeline stages
 - [ ] Run seed module — verify 300 rows in DB
 - [ ] Commit and merge to `main`
+
+## Phase 4.1: Unit tests for postgreSQL repository
+- [ ] Add `gleam_test` dev dependency
+- [ ] Investigate factories for test data generation in Gleam community for pog
+or with squirrel. If none, create simple helper functions in `contacts_test.gleam` to generate test contacts.
+- [ ] Create `src/platform/postgresql/repositories/contacts_test.gleam`
+- [ ] Write tests for `list_contacts` with various filters, sorting, pagination
+- [ ] Write tests for `get_contact`, `create_contact`, `update_contact`, `delete_contact`
+- [ ] Run tests, verify all pass
 
 ## Phase 5: Lustre server component — static list
 
@@ -85,7 +82,7 @@ Each phase is a branch from `main`. When complete, merge back to `main`.
 - [ ] Implement `Route` type with `ContactsList` and `ContactDetail(id)` variants
 - [ ] Add `NavigateTo` and `UrlChanged` messages (separate to avoid infinite loop)
 - [ ] Add hidden `<input>` for navigation communication
-- [ ] Create `admin-live.js` (~90 lines) — link click intercept, popstate, pushState
+- [ ] Create `src/js/navigation.js` (~90 lines) — link click intercept, popstate, pushState
 - [ ] Implement `view` pattern matching on route
 - [ ] Wisp catch-all route serves same HTML shell, passes initial URL as flags
 - [ ] Verify: click contact → detail page, back button → list, URL bar updates
@@ -93,9 +90,9 @@ Each phase is a branch from `main`. When complete, merge back to `main`.
 
 ## Phase 8: Popover + Modal components
 
-- [ ] Build `popover.gleam` — CSS anchor positioning, outside click close
-- [ ] Build `modal.gleam` — native `<dialog>`, `showModal()` via emit + client JS
-- [ ] Build `field.gleam` — label + input + error message
+- [ ] Build `src/ui/popover.gleam` — CSS anchor positioning, outside click close
+- [ ] Build `src/ui/modal.gleam` — native `<dialog>`, `showModal()` via emit + client JS
+- [ ] Build `src/ui/field.gleam` — label + input + error message
 - [ ] Integrate 3-dot action menu in table rows (Popover)
 - [ ] Verify: click ⋮ → menu opens, click outside → closes
 - [ ] Commit and merge to `main`
