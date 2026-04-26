@@ -7,8 +7,8 @@ import packages/domain/contacts/repository.{
   Repository, SortByCompany, SortByCreatedAt, SortByEmail, SortByFirstName,
   SortByLastName, SortByUpdatedAt,
 }
+import packages/platform/postgresql/repositories/contacts/sql.{type PipelineStage}
 import pog
-import sql.{type PipelineStage}
 
 pub type PogContactsRepository {
   PogContactsRepository(db: pog.Connection)

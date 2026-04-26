@@ -5,7 +5,7 @@ import gleam/otp/actor
 import mist
 import packages/domain/contacts/repository as repo
 import packages/platform/env
-import packages/platform/postgresql/repositories/contacts as contacts_repo
+import packages/platform/postgresql/repositories/contacts/repository as contacts_repo
 import pog
 import wisp
 import wisp/wisp_mist

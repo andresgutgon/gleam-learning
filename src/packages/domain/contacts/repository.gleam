@@ -1,6 +1,6 @@
 import gleam/option.{type Option}
 import gleam/time/timestamp.{type Timestamp}
-import sql.{type PipelineStage}
+import packages/platform/postgresql/repositories/contacts/sql.{type PipelineStage}
 
 // --- Domain Types ---
 
