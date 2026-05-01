@@ -48,12 +48,10 @@ pub fn seed(db: pog.Connection) -> Result(Nil, String) {
     "🌱 Seeding " <> int.to_string(seed_contact_count) <> " contacts...",
   )
 
-  // Generate all contacts
   let contacts =
     generate_range(1, seed_contact_count + 1, [])
     |> list.map(generate_contact)
 
-  // Insert or update contacts
   case insert_contacts_batch(db, contacts) {
     Ok(_) -> {
       io.println(
@@ -80,7 +78,6 @@ fn generate_contact(index: Int) -> SeedContact {
     <> string.pad_start(int.to_string(index), 3, "0")
     <> "@seed.local"
 
-  // Deterministically cycle through companies and titles
   let company_index = { index - 1 } % list.length(companies)
   let title_index = { index - 1 } % list.length(job_titles)
   let stage_index = { index - 1 } % list.length(pipeline_stages)
@@ -89,11 +86,8 @@ fn generate_contact(index: Int) -> SeedContact {
   let title = get_list_item(job_titles, title_index, "Unknown Title")
   let stage = get_list_item(pipeline_stages, stage_index, Lead)
 
-  // Generate realistic names using blah
   let first_name = name.first_name()
   let last_name = name.last_name()
-
-  // Generate deterministic phone number
   let phone = generate_phone_number(index)
 
   SeedContact(
@@ -115,8 +109,6 @@ fn get_list_item(list: List(a), index: Int, default: a) -> a {
 }
 
 fn generate_phone_number(seed: Int) -> String {
-  // Generate a US-style phone number (555) XXX-XXXX
-  // Using seed to make it deterministic but varied
   let area_code = 555
   let exchange = { seed * 7 } % 1000
   let line = { seed * 13 } % 10_000
@@ -133,7 +125,6 @@ fn insert_contacts_batch(
   db: pog.Connection,
   contacts: List(SeedContact),
 ) -> Result(Nil, String) {
-  // Use single inserts with upsert logic
   contacts
   |> list.try_each(fn(contact) { insert_or_update_contact(db, contact) })
   |> result.replace(Nil)
@@ -143,7 +134,6 @@ fn insert_or_update_contact(
   db: pog.Connection,
   contact: SeedContact,
 ) -> Result(Nil, String) {
-  // Use ON CONFLICT to handle idempotency
   let query =
     "
     INSERT INTO contacts (first_name, last_name, email, phone, company, title, stage)

@@ -1,5 +1,4 @@
 import gleam/erlang/process
-import gleam/io
 import gleam/otp/actor
 import packages/platform/env
 import pog
@@ -9,12 +8,9 @@ pub type AppContext {
 }
 
 pub fn start() -> AppContext {
-  case env.load_dotenv(".env") {
-    Ok(_) -> io.println("✓ Loaded .env file")
-    Error(e) -> io.println("⚠ Failed to load .env: " <> e)
-  }
+  let env = env.load()
 
-  AppContext(db: start_db(db_url: env.get_db_url()))
+  AppContext(db: start_db(db_url: env.db_url))
 }
 
 fn start_db(db_url db_url: String) -> pog.Connection {
