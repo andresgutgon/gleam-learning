@@ -62,13 +62,12 @@ fn contacts_page(
       title: option.None,
       sort_by: SortByCreatedAt,
       sort_direction: Descending,
-      cursor_value: option.None,
-      cursor_id: option.None,
+      cursor: option.None,
       limit: 30,
     )
   case config.contacts_repo.list(params) {
-    Ok(contacts) -> {
-      let contacts_html = list_contacts_html(contacts)
+    Ok(result) -> {
+      let contacts_html = list_contacts_html(result.contacts)
       wisp.ok() |> wisp.html_body(contacts_html)
     }
     Error(err) -> {

@@ -1,8 +1,10 @@
 import gleam/dict.{type Dict}
 import gleam/int
 import gleam/list
+import gleam/option.{None}
 import packages/domain/contacts/repository.{
-  type Contact, type Error, type ListParams, Contact, NotFound,
+  type Contact, type Error, type ListParams, type ListResult, Contact,
+  ListResult, NotFound,
 }
 
 pub type MockContactsRepository {
@@ -21,9 +23,11 @@ pub fn get(repo: MockContactsRepository, id: Int) -> Result(Contact, Error) {
 pub fn list(
   repo: MockContactsRepository,
   _params: ListParams,
-) -> Result(List(Contact), Error) {
-  // In-memory filtering, sorting, pagination would go here
-  Ok(dict.values(repo.contacts))
+) -> Result(ListResult, Error) {
+  // In-memory filtering, sorting, and cursor pagination would go here.
+  // For now this returns the raw set with no next cursor — the PostgreSQL
+  // adapter is the real implementation.
+  Ok(ListResult(contacts: dict.values(repo.contacts), next_cursor: None))
 }
 
 pub fn create(
