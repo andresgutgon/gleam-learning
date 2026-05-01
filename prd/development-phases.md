@@ -64,7 +64,7 @@ Each phase is a branch from `main`. When complete, merge back to `main`.
 - [x] Create `just/seeds.just` file with seed commands
 - [x] Investigate Gleam CLI custom commands (can we run `gleam run -m seeds`?)
 - [x] Alternative: Create standalone script that compiles and runs seed module
-- [ ] Command should accept flags: `--reset` to clear before seeding, `--count N` for custom contact count
+- [x] Command should accept flags: `--reset` to clear before seeding, `--count N` for custom contact count
 - [x] Integrate into justfile: `just seed` or `just seed-reset`
 - [x] Add db-reset command for full reset (drop, create, migrate, seed)
 
@@ -112,7 +112,7 @@ Each phase is a branch from `main`. When complete, merge back to `main`.
 - [x] All tests independent and can run in parallel
 
 ### Phase 4.2: Advanced repository features
-  - [ ] Cursor-based pagination (TODO: requires SQL implementation)
+  - [x] Cursor-based pagination (keyset; `Cursor`/`ListResult` types, limit+1 fetch, RFC3339 for timestamps)
 
 ## Phase 5: Lustre server component — static list
 

@@ -1,11 +1,12 @@
 import gleam/list
-import gleam/option
+import gleam/option.{None, Some}
 import gleam/result
 import packages/domain/contacts/repository.{
-  type Contact, type Error, type ListParams, type Repository, type SortDirection,
-  type SortField, Ascending, Contact, DatabaseError, Descending, NotFound,
-  Repository, SortByCompany, SortByCreatedAt, SortByEmail, SortByFirstName,
-  SortByLastName, SortByUpdatedAt,
+  type Contact, type Cursor, type Error, type ListParams, type ListResult,
+  type Repository, type SortDirection, type SortField, Ascending, Contact,
+  Cursor, DatabaseError, Descending, ListResult, NotFound, Repository,
+  SortByCompany, SortByCreatedAt, SortByEmail, SortByFirstName, SortByLastName,
+  SortByUpdatedAt, cursor_from_contact,
 }
 import packages/platform/postgresql/repositories/contacts/sql.{
   type PipelineStage,
@@ -45,24 +46,61 @@ pub fn get(repo: PogContactsRepository, id: Int) -> Result(Contact, Error) {
 pub fn list(
   repo: PogContactsRepository,
   params: ListParams,
-) -> Result(List(Contact), Error) {
-  sql.list_contacts(
-    repo.db,
-    option.map(params.stage, pipeline_stage_to_sql) |> option.unwrap(""),
-    option.unwrap(params.company, ""),
-    option.unwrap(params.search, ""),
-    option.unwrap(params.email, ""),
-    option.unwrap(params.phone, ""),
-    option.unwrap(params.title, ""),
-    sort_field_to_sql(params.sort_by),
-    sort_direction_to_sql(params.sort_direction),
-    params.limit,
+) -> Result(ListResult, Error) {
+  // Fetch limit + 1 so we can detect whether there's a next page without an
+  // extra COUNT query. If the DB returns more than `limit` rows, the trailing
+  // row is dropped and used to construct `next_cursor`.
+  let fetch_limit = params.limit + 1
+  let #(cursor_value, cursor_id) = case params.cursor {
+    Some(Cursor(value, id)) -> #(value, id)
+    None -> #("", 0)
+  }
+
+  use returned <- result.try(
+    sql.list_contacts(
+      repo.db,
+      option.map(params.stage, pipeline_stage_to_sql) |> option.unwrap(""),
+      option.unwrap(params.company, ""),
+      option.unwrap(params.search, ""),
+      option.unwrap(params.email, ""),
+      option.unwrap(params.phone, ""),
+      option.unwrap(params.title, ""),
+      sort_field_to_sql(params.sort_by),
+      sort_direction_to_sql(params.sort_direction),
+      fetch_limit,
+      cursor_value,
+      cursor_id,
+    )
+    |> result.map_error(pog_error_to_repo_error),
   )
-  |> result.map(fn(returned) {
-    returned.rows
-    |> list.map(list_contacts_row_to_contact)
-  })
-  |> result.map_error(pog_error_to_repo_error)
+
+  let contacts = list.map(returned.rows, list_contacts_row_to_contact)
+  Ok(build_list_result(contacts, params.limit, params.sort_by))
+}
+
+fn build_list_result(
+  contacts: List(Contact),
+  page_size: Int,
+  sort_by: SortField,
+) -> ListResult {
+  case list.length(contacts) > page_size {
+    False -> ListResult(contacts: contacts, next_cursor: None)
+    True -> {
+      let kept = list.take(contacts, page_size)
+      let next_cursor = last_cursor(kept, sort_by)
+      ListResult(contacts: kept, next_cursor: next_cursor)
+    }
+  }
+}
+
+fn last_cursor(
+  contacts: List(Contact),
+  sort_by: SortField,
+) -> option.Option(Cursor) {
+  case list.last(contacts) {
+    Ok(last) -> Some(cursor_from_contact(last, sort_by))
+    Error(_) -> None
+  }
 }
 
 pub fn create(

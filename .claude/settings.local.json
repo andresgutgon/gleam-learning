@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(just squirrel *)",
+      "Bash(mise exec *)",
+      "Bash(cat)",
+      "Bash(just test *)",
+      "Bash(git checkout *)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git push *)",
+      "Bash(gh pr *)"
+    ]
+  }
+}
