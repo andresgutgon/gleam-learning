@@ -123,7 +123,6 @@ Each phase is a branch from `main`. When complete, merge back to `main`.
 - [ ] Wire WebSocket to Lustre runtime (`register_subject`, `runtime_message_decoder`, `client_message_to_json`)
 - [ ] Render initial HTML shell with `<lustre-server-component>` + script
 - [ ] Verify: page loads, WebSocket connects, contacts list renders
-- [ ] Commit and merge to `main`
 
 ## Phase 6: Tailwind + theme + dark mode
 
