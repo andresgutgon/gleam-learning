@@ -1,26 +1,8 @@
 import gleam/option.{type Option}
 import gleam/time/calendar
-import gleam/time/timestamp.{type Timestamp}
-import shared/domain/contacts/stage.{type PipelineStage}
-
-// --- Domain Types ---
-
-pub type Contact {
-  Contact(
-    id: Int,
-    first_name: String,
-    last_name: String,
-    email: String,
-    phone: Option(String),
-    company: Option(String),
-    title: Option(String),
-    stage: PipelineStage,
-    profile_picture_url: Option(String),
-    notes: Option(String),
-    created_at: Timestamp,
-    updated_at: Timestamp,
-  )
-}
+import gleam/time/timestamp
+import shared/contacts/contact.{type Contact, type PipelineStage}
+import shared/repository.{type Error}
 
 pub type ListParams {
   ListParams(
@@ -66,11 +48,6 @@ pub type Cursor {
 /// last page.
 pub type ListResult {
   ListResult(contacts: List(Contact), next_cursor: Option(Cursor))
-}
-
-pub type Error {
-  DatabaseError(String)
-  NotFound(Int)
 }
 
 // --- Repository Interface (Ports) ---

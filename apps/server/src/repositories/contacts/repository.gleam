@@ -3,14 +3,14 @@ import gleam/option.{None, Some}
 import gleam/result
 import pog
 import repositories/contacts/sql
-import shared/domain/contacts/repository.{
-  type Contact, type Cursor, type Error, type ListParams, type ListResult,
-  type Repository, type SortDirection, type SortField, Ascending, Contact,
-  Cursor, DatabaseError, Descending, ListResult, NotFound, Repository,
-  SortByCompany, SortByCreatedAt, SortByEmail, SortByFirstName, SortByLastName,
-  SortByUpdatedAt, cursor_from_contact,
+import shared/contacts/contact.{type Contact, type PipelineStage, Contact}
+import shared/contacts/repository.{
+  type Cursor, type ListParams, type ListResult, type Repository,
+  type SortDirection, type SortField, Ascending, Cursor, Descending, ListResult,
+  Repository, SortByCompany, SortByCreatedAt, SortByEmail, SortByFirstName,
+  SortByLastName, SortByUpdatedAt, cursor_from_contact,
 }
-import shared/domain/contacts/stage.{type PipelineStage}
+import shared/repository.{type Error, DatabaseError, NotFound}
 
 pub type PogContactsRepository {
   PogContactsRepository(db: pog.Connection)
@@ -239,28 +239,28 @@ fn update_contact_row_to_contact(row: sql.UpdateContactRow) -> Contact {
 
 fn domain_stage_to_sql(s: PipelineStage) -> sql.PipelineStage {
   case s {
-    stage.Customer -> sql.Customer
-    stage.Opportunity -> sql.Opportunity
-    stage.Contact -> sql.Contact
-    stage.Lead -> sql.Lead
+    contact.CustomerStage -> sql.Customer
+    contact.OpportunityStage -> sql.Opportunity
+    contact.ContactStage -> sql.Contact
+    contact.LeadStage -> sql.Lead
   }
 }
 
 fn sql_stage_to_domain(s: sql.PipelineStage) -> PipelineStage {
   case s {
-    sql.Customer -> stage.Customer
-    sql.Opportunity -> stage.Opportunity
-    sql.Contact -> stage.Contact
-    sql.Lead -> stage.Lead
+    sql.Customer -> contact.CustomerStage
+    sql.Opportunity -> contact.OpportunityStage
+    sql.Contact -> contact.ContactStage
+    sql.Lead -> contact.LeadStage
   }
 }
 
 fn pipeline_stage_to_sql(s: PipelineStage) -> String {
   case s {
-    stage.Customer -> "customer"
-    stage.Opportunity -> "opportunity"
-    stage.Contact -> "contact"
-    stage.Lead -> "lead"
+    contact.CustomerStage -> "customer"
+    contact.OpportunityStage -> "opportunity"
+    contact.ContactStage -> "contact"
+    contact.LeadStage -> "lead"
   }
 }
 
