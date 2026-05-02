@@ -2,7 +2,7 @@ import gleam/option.{type Option}
 import gleam/time/calendar
 import gleam/time/timestamp
 import shared/contacts/contact.{type Contact, type PipelineStage}
-import shared/repository.{type Error}
+import shared/pagination.{type Cursor, Cursor}
 
 pub type ListParams {
   ListParams(
@@ -34,32 +34,6 @@ pub type SortField {
 pub type SortDirection {
   Ascending
   Descending
-}
-
-/// Opaque-ish keyset cursor. `value` is the text-encoded sort column value
-/// at the boundary row; timestamps are encoded as RFC3339. `id` is the row's
-/// primary key, used as the tiebreaker.
-pub type Cursor {
-  Cursor(value: String, id: Int)
-}
-
-/// Result of a paginated list query. `next_cursor` is `Some` when there is
-/// at least one more page after the returned `contacts`, and `None` on the
-/// last page.
-pub type ListResult {
-  ListResult(contacts: List(Contact), next_cursor: Option(Cursor))
-}
-
-// --- Repository Interface (Ports) ---
-
-pub type Repository {
-  Repository(
-    get: fn(Int) -> Result(Contact, Error),
-    list: fn(ListParams) -> Result(ListResult, Error),
-    create: fn(Contact) -> Result(Contact, Error),
-    update: fn(Contact) -> Result(Contact, Error),
-    delete: fn(Int) -> Result(Nil, Error),
-  )
 }
 
 // --- Cursor helpers ---

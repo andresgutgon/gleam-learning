@@ -1,3 +1,6 @@
+import app/error.{
+  type DatabaseError, QueryFailed, RecordNotFound, UnexpectedNoRows,
+}
 import gleam/list
 import gleam/option.{None, Some}
 import gleam/result
@@ -5,18 +8,26 @@ import pog
 import repositories/contacts/sql
 import shared/contacts/contact.{type Contact, type PipelineStage, Contact}
 import shared/contacts/repository.{
-  type Cursor, type ListParams, type ListResult, type Repository,
-  type SortDirection, type SortField, Ascending, Cursor, Descending, ListResult,
-  Repository, SortByCompany, SortByCreatedAt, SortByEmail, SortByFirstName,
-  SortByLastName, SortByUpdatedAt, cursor_from_contact,
+  type ListParams, type SortDirection, type SortField, Ascending, Descending,
+  SortByCompany, SortByCreatedAt, SortByEmail, SortByFirstName, SortByLastName,
+  SortByUpdatedAt, cursor_from_contact,
 }
-import shared/repository.{type Error, DatabaseError, NotFound}
+import shared/pagination.{type Cursor, type Page, Cursor, Page}
+
+pub type Repository {
+  Repository(
+    get: fn(Int) -> Result(Contact, DatabaseError),
+    list: fn(ListParams) -> Result(Page(Contact), DatabaseError),
+    create: fn(Contact) -> Result(Contact, DatabaseError),
+    update: fn(Contact) -> Result(Contact, DatabaseError),
+    delete: fn(Int) -> Result(Nil, DatabaseError),
+  )
+}
 
 pub type PogContactsRepository {
   PogContactsRepository(db: pog.Connection)
 }
 
-// Create a Repository interface from PogContactsRepository
 pub fn new(db: pog.Connection) -> Repository {
   let repo = PogContactsRepository(db: db)
   Repository(
@@ -30,7 +41,10 @@ pub fn new(db: pog.Connection) -> Repository {
 
 // --- Ports Implementation ---
 
-pub fn get(repo: PogContactsRepository, id: Int) -> Result(Contact, Error) {
+pub fn get(
+  repo: PogContactsRepository,
+  id: Int,
+) -> Result(Contact, DatabaseError) {
   use returned <- result.try(
     sql.get_contact(repo.db, id)
     |> result.map_error(pog_error_to_repo_error),
@@ -38,14 +52,14 @@ pub fn get(repo: PogContactsRepository, id: Int) -> Result(Contact, Error) {
 
   case returned.rows {
     [contact, ..] -> Ok(get_contact_row_to_contact(contact))
-    [] -> Error(NotFound(id))
+    [] -> Error(RecordNotFound)
   }
 }
 
 pub fn list(
   repo: PogContactsRepository,
   params: ListParams,
-) -> Result(ListResult, Error) {
+) -> Result(Page(Contact), DatabaseError) {
   // Fetch limit + 1 so we can detect whether there's a next page without an
   // extra COUNT query. If the DB returns more than `limit` rows, the trailing
   // row is dropped and used to construct `next_cursor`.
@@ -81,13 +95,13 @@ fn build_list_result(
   contacts: List(Contact),
   page_size: Int,
   sort_by: SortField,
-) -> ListResult {
+) -> Page(Contact) {
   case list.length(contacts) > page_size {
-    False -> ListResult(contacts: contacts, next_cursor: None)
+    False -> Page(data: contacts, next_cursor: None)
     True -> {
       let kept = list.take(contacts, page_size)
       let next_cursor = last_cursor(kept, sort_by)
-      ListResult(contacts: kept, next_cursor: next_cursor)
+      Page(data: kept, next_cursor: next_cursor)
     }
   }
 }
@@ -105,7 +119,7 @@ fn last_cursor(
 pub fn create(
   repo: PogContactsRepository,
   contact: Contact,
-) -> Result(Contact, Error) {
+) -> Result(Contact, DatabaseError) {
   use returned <- result.try(
     sql.create_contact(
       repo.db,
@@ -124,14 +138,14 @@ pub fn create(
 
   case returned.rows {
     [created, ..] -> Ok(create_contact_row_to_contact(created))
-    [] -> Error(DatabaseError("Failed to create contact"))
+    [] -> Error(UnexpectedNoRows)
   }
 }
 
 pub fn update(
   repo: PogContactsRepository,
   contact: Contact,
-) -> Result(Contact, Error) {
+) -> Result(Contact, DatabaseError) {
   use returned <- result.try(
     sql.update_contact(
       repo.db,
@@ -151,11 +165,14 @@ pub fn update(
 
   case returned.rows {
     [updated, ..] -> Ok(update_contact_row_to_contact(updated))
-    [] -> Error(NotFound(contact.id))
+    [] -> Error(RecordNotFound)
   }
 }
 
-pub fn delete(repo: PogContactsRepository, id: Int) -> Result(Nil, Error) {
+pub fn delete(
+  repo: PogContactsRepository,
+  id: Int,
+) -> Result(Nil, DatabaseError) {
   use returned <- result.try(
     sql.delete_contact(repo.db, id)
     |> result.map_error(pog_error_to_repo_error),
@@ -163,7 +180,7 @@ pub fn delete(repo: PogContactsRepository, id: Int) -> Result(Nil, Error) {
 
   case returned.rows {
     [_deleted, ..] -> Ok(Nil)
-    [] -> Error(NotFound(id))
+    [] -> Error(RecordNotFound)
   }
 }
 
@@ -284,16 +301,15 @@ fn sort_direction_to_sql(direction: SortDirection) -> String {
 
 // --- Error Handling ---
 
-fn pog_error_to_repo_error(err: pog.QueryError) -> Error {
+fn pog_error_to_repo_error(err: pog.QueryError) -> DatabaseError {
   case err {
-    pog.ConstraintViolated(message, _, _) -> DatabaseError(message)
-    pog.PostgresqlError(_, _, message) -> DatabaseError(message)
+    pog.ConstraintViolated(message, _, _) -> QueryFailed(message)
+    pog.PostgresqlError(_, _, message) -> QueryFailed(message)
     pog.UnexpectedArgumentCount(_, _) ->
-      DatabaseError("Unexpected argument count")
-    pog.UnexpectedArgumentType(_, _) ->
-      DatabaseError("Unexpected argument type")
-    pog.UnexpectedResultType(_) -> DatabaseError("Unexpected result type")
-    pog.QueryTimeout -> DatabaseError("Query timeout")
-    pog.ConnectionUnavailable -> DatabaseError("Connection unavailable")
+      QueryFailed("Unexpected argument count")
+    pog.UnexpectedArgumentType(_, _) -> QueryFailed("Unexpected argument type")
+    pog.UnexpectedResultType(_) -> QueryFailed("Unexpected result type")
+    pog.QueryTimeout -> QueryFailed("Query timeout")
+    pog.ConnectionUnavailable -> QueryFailed("Connection unavailable")
   }
 }

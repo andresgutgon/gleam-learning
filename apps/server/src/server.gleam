@@ -3,6 +3,7 @@ import app/context.{Context}
 import app/database
 import gleam/erlang/process
 import mist
+import router
 import wisp
 import wisp/wisp_mist
 
@@ -13,12 +14,13 @@ pub fn main() -> Nil {
 
   wisp.configure_logger()
 
-  router.handle_request(_, context)
-  |> wisp_mist.handler(config.secret_key_base)
-  |> mist.new
-  |> mist.bind(config.server_host)
-  |> mist.port(config.server_port)
-  |> mist.start
+  let assert Ok(_) =
+    router.handle_request(_, context)
+    |> wisp_mist.handler(config.secret_key_base)
+    |> mist.new
+    |> mist.bind(config.server_host)
+    |> mist.port(config.server_port)
+    |> mist.start
 
   process.sleep_forever()
 }

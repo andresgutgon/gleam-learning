@@ -1,6 +1,8 @@
-import app/error.{type DatabaseError, QueryFailed, RecordNotFound}
+import app/error.{type DatabaseError, RecordNotFound}
 import gleam/dynamic/decode.{type Decoder}
 import gleam/int
+import gleam/json.{type Json}
+import gleam/option.{type Option}
 import wisp.{type Request, type Response}
 
 pub fn middleware(
@@ -33,6 +35,19 @@ pub fn decode_body(
   }
 }
 
+pub fn page_response(
+  items: List(a),
+  next_cursor: Option(Json),
+  encode_item: fn(a) -> Json,
+) -> Response {
+  json.object([
+    #("data", json.array(items, encode_item)),
+    #("next_cursor", json.nullable(next_cursor, fn(c) { c })),
+  ])
+  |> json.to_string
+  |> wisp.json_body(wisp.ok(), _)
+}
+
 pub fn db_execute(
   result: Result(a, DatabaseError),
   next: fn(a) -> Response,
@@ -40,6 +55,6 @@ pub fn db_execute(
   case result {
     Ok(value) -> next(value)
     Error(RecordNotFound) -> wisp.not_found()
-    Error(QueryFailed(_)) -> wisp.internal_server_error()
+    Error(_) -> wisp.internal_server_error()
   }
 }
