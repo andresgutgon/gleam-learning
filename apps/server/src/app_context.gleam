@@ -1,6 +1,6 @@
+import env
 import gleam/erlang/process
 import gleam/otp/actor
-import packages/platform/env
 import pog
 
 pub type AppContext {

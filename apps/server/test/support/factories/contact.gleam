@@ -3,10 +3,8 @@
 
 import gleam/option.{type Option, None, Some}
 import gleam/time/timestamp
-import packages/domain/contacts/repository.{type Contact, Contact}
-import packages/platform/postgresql/repositories/contacts/sql.{
-  type PipelineStage, Lead,
-}
+import shared/domain/contacts/repository.{type Contact, Contact}
+import shared/domain/contacts/stage.{type PipelineStage, Lead}
 
 /// Factory builder for creating test contacts
 pub type ContactFactory {

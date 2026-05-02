@@ -1,5 +1,5 @@
 //// This module contains the code to run the sql queries defined in
-//// `./src/packages/platform/postgresql/repositories/contacts/sql`.
+//// `./src/packages/platform/postgresql/contacts/sql`.
 //// > 🐿️ This module was generated automatically using v4.6.0 of
 //// > the [squirrel package](https://github.com/giacomocavalieri/squirrel).
 ////
@@ -10,7 +10,7 @@ import gleam/time/timestamp.{type Timestamp}
 import pog
 
 /// A row you get from running the `count_contacts` query
-/// defined in `./src/packages/platform/postgresql/repositories/contacts/sql/count_contacts.sql`.
+/// defined in `./src/packages/platform/postgresql/contacts/sql/count_contacts.sql`.
 ///
 /// > 🐿️ This type definition was generated automatically using v4.6.0 of the
 /// > [squirrel package](https://github.com/giacomocavalieri/squirrel).
@@ -44,7 +44,7 @@ FROM
 }
 
 /// A row you get from running the `create_contact` query
-/// defined in `./src/packages/platform/postgresql/repositories/contacts/sql/create_contact.sql`.
+/// defined in `./src/packages/platform/postgresql/contacts/sql/create_contact.sql`.
 ///
 /// > 🐿️ This type definition was generated automatically using v4.6.0 of the
 /// > [squirrel package](https://github.com/giacomocavalieri/squirrel).
@@ -165,7 +165,7 @@ updated_at::timestamp;
 }
 
 /// A row you get from running the `delete_contact` query
-/// defined in `./src/packages/platform/postgresql/repositories/contacts/sql/delete_contact.sql`.
+/// defined in `./src/packages/platform/postgresql/contacts/sql/delete_contact.sql`.
 ///
 /// > 🐿️ This type definition was generated automatically using v4.6.0 of the
 /// > [squirrel package](https://github.com/giacomocavalieri/squirrel).
@@ -202,7 +202,7 @@ RETURNING id;
 }
 
 /// A row you get from running the `get_contact` query
-/// defined in `./src/packages/platform/postgresql/repositories/contacts/sql/get_contact.sql`.
+/// defined in `./src/packages/platform/postgresql/contacts/sql/get_contact.sql`.
 ///
 /// > 🐿️ This type definition was generated automatically using v4.6.0 of the
 /// > [squirrel package](https://github.com/giacomocavalieri/squirrel).
@@ -289,7 +289,7 @@ WHERE
 }
 
 /// A row you get from running the `list_contacts` query
-/// defined in `./src/packages/platform/postgresql/repositories/contacts/sql/list_contacts.sql`.
+/// defined in `./src/packages/platform/postgresql/contacts/sql/list_contacts.sql`.
 ///
 /// > 🐿️ This type definition was generated automatically using v4.6.0 of the
 /// > [squirrel package](https://github.com/giacomocavalieri/squirrel).
@@ -478,7 +478,7 @@ LIMIT $9;
 }
 
 /// A row you get from running the `update_contact` query
-/// defined in `./src/packages/platform/postgresql/repositories/contacts/sql/update_contact.sql`.
+/// defined in `./src/packages/platform/postgresql/contacts/sql/update_contact.sql`.
 ///
 /// > 🐿️ This type definition was generated automatically using v4.6.0 of the
 /// > [squirrel package](https://github.com/giacomocavalieri/squirrel).

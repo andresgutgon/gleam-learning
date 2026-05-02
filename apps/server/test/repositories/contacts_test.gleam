@@ -1,20 +1,18 @@
 //// Unit tests for PostgreSQL contacts repository
 //// These tests use transaction-based rollback for isolation
 
-import factories/contact as contact_factory
 import gleam/list
 import gleam/option.{None, Some}
 import gleeunit
 import gleeunit/should
-import packages/domain/contacts/repository.{
+import repositories/contacts/repository as pg_repo
+import shared/domain/contacts/repository.{
   Ascending, Descending, ListParams, SortByCompany, SortByCreatedAt, SortByEmail,
   SortByFirstName,
 }
-import packages/platform/postgresql/repositories/contacts/repository as pg_repo
-import packages/platform/postgresql/repositories/contacts/sql.{
-  Customer, Lead, Opportunity,
-}
+import shared/domain/contacts/stage.{Customer, Lead, Opportunity}
 import support/db
+import support/factories/contact as contact_factory
 
 pub fn main() {
   gleeunit.main()

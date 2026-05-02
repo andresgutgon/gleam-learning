@@ -1,9 +1,7 @@
 import gleam/option.{type Option}
 import gleam/time/calendar
 import gleam/time/timestamp.{type Timestamp}
-import packages/platform/postgresql/repositories/contacts/sql.{
-  type PipelineStage,
-}
+import shared/domain/contacts/stage.{type PipelineStage}
 
 // --- Domain Types ---
 

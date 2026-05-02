@@ -1,7 +1,7 @@
+import env
 import gleam/erlang/process
 import gleam/io
 import gleam/otp/actor
-import packages/platform/env
 import pog
 import seeds/contacts
 
