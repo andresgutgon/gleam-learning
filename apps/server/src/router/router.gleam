@@ -1,8 +1,8 @@
-import apps/web/middleware
-import apps/web/routes/contacts
-import apps/web/routes/home
+import app_context.{type AppContext}
 import gleam/http/request.{type Request}
-import infra.{type AppContext}
+import router/middleware
+import router/routes/contacts
+import router/routes/home
 import wisp
 import wisp/internal
 

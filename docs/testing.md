@@ -15,7 +15,7 @@ This guide explains how to set up and run tests for the project.
 If using Docker:
 
 ```bash
-docker-compose up -d
+just docker up
 ```
 
 This starts PostgreSQL with the credentials defined in your `.env` file.
@@ -38,12 +38,14 @@ This command:
 ### Run all tests
 
 ```bash
+cd apps/server
 gleam test
 ```
 
 ### Run tests with verbose output
 
 ```bash
+cd apps/server
 gleam test -- --verbose
 ```
 
@@ -51,9 +53,9 @@ gleam test -- --verbose
 
 ### Test Organization
 
-Tests are located in the `test/` directory, which mirrors the structure of the `src/` directory. This is required by Gleam because test files import dev dependencies (like `gleeunit`) that are not available to application code.
+Tests are located in the `apps/server/test/` directory, which mirrors the structure of the `apps/server/src/` directory. This is required by Gleam because test files import dev dependencies (like `gleeunit`) that are not available to application code.
 
-Within the `test/` directory:
+Within the `apps/server/test/` directory:
 - **Test files** (`*_test.gleam`) - Mirror the structure of `src/` (e.g., `test/packages/platform/postgresql/repositories/contacts_test.gleam`)
 - **Test factories** (`test/factories/`) - Helpers to build test data
 - **Test support utilities** (`test/support/`) - Shared test helpers like database connections
@@ -125,7 +127,7 @@ just test reset
 Ensure PostgreSQL is running:
 
 ```bash
-docker-compose ps
+just docker status
 ```
 
-If not running, start it with `docker-compose up -d`.
+If not running, start it with `just docker up`

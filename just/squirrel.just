@@ -1,4 +1,4 @@
-set working-directory := '..'
+set working-directory := '../apps/server'
 
 # Generate SQL squirrel
 generate:

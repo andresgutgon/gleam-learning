@@ -11,7 +11,7 @@ services:
     ports:
       - "${POSTGRES_PORT:-5432}:5432"
     volumes:
-      - ./infra/initdb.sh:/docker-entrypoint-initdb.d/01-init.sh
+      - ./initdb.sh:/docker-entrypoint-initdb.d/01-init.sh
       - pgdata:/var/lib/postgresql
 
 volumes:

@@ -9,12 +9,9 @@ import pog
 
 /// Get a database connection for testing
 pub fn test_connection() -> Result(pog.Connection, String) {
-  // Load test environment if not already loaded
-  let _ = env.load_dotenv(".env.test")
-
-  let db_url = env.get_db_url()
+  let env = env.load_test()
   let pool_name = process.new_name("")
-  let assert Ok(config) = pog.url_config(pool_name, db_url)
+  let assert Ok(config) = pog.url_config(pool_name, env.db_url)
   let assert Ok(actor.Started(_pid, db_pool)) =
     config
     |> pog.pool_size(1)

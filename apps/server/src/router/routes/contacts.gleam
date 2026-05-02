@@ -1,10 +1,10 @@
+import app_context.{type AppContext}
 import gleam/http
 import gleam/http/request.{type Request}
 import gleam/int
 import gleam/list
 import gleam/option
 import gleam/string
-import infra.{type AppContext}
 import packages/domain/contacts/repository.{
   type Contact, Descending, ListParams, NotFound, SortByCreatedAt,
 }
