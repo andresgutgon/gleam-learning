@@ -1,12 +1,7 @@
-//// Factory for creating test contacts with a builder pattern.
-//// Inspired by Ruby's FactoryBot.
-
 import gleam/option.{type Option, None, Some}
 import gleam/time/timestamp
-import shared/domain/contacts/repository.{type Contact, Contact}
-import shared/domain/contacts/stage.{type PipelineStage, Lead}
+import shared/contacts/contact.{type Contact, Contact, type PipelineStage, LeadStage}
 
-/// Factory builder for creating test contacts
 pub type ContactFactory {
   ContactFactory(
     id: Int,
@@ -32,7 +27,7 @@ pub fn new() -> ContactFactory {
     phone: None,
     company: None,
     title: None,
-    stage: Lead,
+    stage: LeadStage,
     profile_picture_url: None,
     notes: None,
   )
@@ -49,7 +44,7 @@ pub fn new_with_sequence(seq: Int) -> ContactFactory {
     phone: None,
     company: None,
     title: None,
-    stage: Lead,
+    stage: LeadStage,
     profile_picture_url: None,
     notes: None,
   )
