@@ -4,7 +4,7 @@ import mist
 import wisp
 import wisp/wisp_mist
 
-import router/router
+import router
 
 pub fn main() -> Nil {
   wisp.configure_logger()

@@ -5,10 +5,10 @@ import gleam/int
 import gleam/list
 import gleam/option
 import gleam/string
-import packages/domain/contacts/repository.{
+import repositories/contacts/repository as contacts_repo
+import shared/domain/contacts/repository.{
   type Contact, Descending, ListParams, NotFound, SortByCreatedAt,
 }
-import packages/platform/postgresql/repositories/contacts/repository as contacts_repo
 import wisp
 import wisp/internal
 

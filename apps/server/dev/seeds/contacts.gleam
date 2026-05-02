@@ -4,10 +4,10 @@ import gleam/io
 import gleam/list
 import gleam/result
 import gleam/string
-import packages/platform/postgresql/repositories/contacts/sql.{
+import pog
+import shared/domain/contacts/stage.{
   type PipelineStage, Contact, Customer, Lead, Opportunity,
 }
-import pog
 
 const seed_contact_count = 300
 

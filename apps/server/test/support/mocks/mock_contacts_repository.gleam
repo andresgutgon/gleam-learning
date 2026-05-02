@@ -2,7 +2,7 @@ import gleam/dict.{type Dict}
 import gleam/int
 import gleam/list
 import gleam/option.{None}
-import packages/domain/contacts/repository.{
+import shared/domain/contacts/repository.{
   type Contact, type Error, type ListParams, type ListResult, Contact,
   ListResult, NotFound,
 }

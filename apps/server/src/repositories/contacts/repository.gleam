@@ -1,17 +1,16 @@
 import gleam/list
 import gleam/option.{None, Some}
 import gleam/result
-import packages/domain/contacts/repository.{
+import pog
+import repositories/contacts/sql
+import shared/domain/contacts/repository.{
   type Contact, type Cursor, type Error, type ListParams, type ListResult,
   type Repository, type SortDirection, type SortField, Ascending, Contact,
   Cursor, DatabaseError, Descending, ListResult, NotFound, Repository,
   SortByCompany, SortByCreatedAt, SortByEmail, SortByFirstName, SortByLastName,
   SortByUpdatedAt, cursor_from_contact,
 }
-import packages/platform/postgresql/repositories/contacts/sql.{
-  type PipelineStage,
-}
-import pog
+import shared/domain/contacts/stage.{type PipelineStage}
 
 pub type PogContactsRepository {
   PogContactsRepository(db: pog.Connection)
@@ -116,7 +115,7 @@ pub fn create(
       option.unwrap(contact.phone, ""),
       option.unwrap(contact.company, ""),
       option.unwrap(contact.title, ""),
-      contact.stage,
+      domain_stage_to_sql(contact.stage),
       option.unwrap(contact.profile_picture_url, ""),
       option.unwrap(contact.notes, ""),
     )
@@ -142,7 +141,7 @@ pub fn update(
       option.unwrap(contact.phone, ""),
       option.unwrap(contact.company, ""),
       option.unwrap(contact.title, ""),
-      contact.stage,
+      domain_stage_to_sql(contact.stage),
       option.unwrap(contact.profile_picture_url, ""),
       option.unwrap(contact.notes, ""),
       contact.id,
@@ -179,7 +178,7 @@ fn get_contact_row_to_contact(row: sql.GetContactRow) -> Contact {
     phone: row.phone,
     company: row.company,
     title: row.title,
-    stage: row.stage,
+    stage: sql_stage_to_domain(row.stage),
     profile_picture_url: row.profile_picture_url,
     notes: row.notes,
     created_at: row.created_at,
@@ -196,7 +195,7 @@ fn list_contacts_row_to_contact(row: sql.ListContactsRow) -> Contact {
     phone: row.phone,
     company: row.company,
     title: row.title,
-    stage: row.stage,
+    stage: sql_stage_to_domain(row.stage),
     profile_picture_url: row.profile_picture_url,
     notes: row.notes,
     created_at: row.created_at,
@@ -213,7 +212,7 @@ fn create_contact_row_to_contact(row: sql.CreateContactRow) -> Contact {
     phone: row.phone,
     company: row.company,
     title: row.title,
-    stage: row.stage,
+    stage: sql_stage_to_domain(row.stage),
     profile_picture_url: row.profile_picture_url,
     notes: row.notes,
     created_at: row.created_at,
@@ -230,7 +229,7 @@ fn update_contact_row_to_contact(row: sql.UpdateContactRow) -> Contact {
     phone: row.phone,
     company: row.company,
     title: row.title,
-    stage: row.stage,
+    stage: sql_stage_to_domain(row.stage),
     profile_picture_url: row.profile_picture_url,
     notes: row.notes,
     created_at: row.created_at,
@@ -238,12 +237,30 @@ fn update_contact_row_to_contact(row: sql.UpdateContactRow) -> Contact {
   )
 }
 
-fn pipeline_stage_to_sql(stage: PipelineStage) -> String {
-  case stage {
-    sql.Customer -> "customer"
-    sql.Opportunity -> "opportunity"
-    sql.Contact -> "contact"
-    sql.Lead -> "lead"
+fn domain_stage_to_sql(s: PipelineStage) -> sql.PipelineStage {
+  case s {
+    stage.Customer -> sql.Customer
+    stage.Opportunity -> sql.Opportunity
+    stage.Contact -> sql.Contact
+    stage.Lead -> sql.Lead
+  }
+}
+
+fn sql_stage_to_domain(s: sql.PipelineStage) -> PipelineStage {
+  case s {
+    sql.Customer -> stage.Customer
+    sql.Opportunity -> stage.Opportunity
+    sql.Contact -> stage.Contact
+    sql.Lead -> stage.Lead
+  }
+}
+
+fn pipeline_stage_to_sql(s: PipelineStage) -> String {
+  case s {
+    stage.Customer -> "customer"
+    stage.Opportunity -> "opportunity"
+    stage.Contact -> "contact"
+    stage.Lead -> "lead"
   }
 }
 
