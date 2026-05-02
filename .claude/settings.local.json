@@ -12,7 +12,9 @@
       "Bash(gh pr *)",
       "Bash(gleam build *)",
       "Bash(gleam run *)",
-      "Bash(gleam test *)"
+      "Bash(gleam test *)",
+      "Bash(xargs ls *)",
+      "Bash(gleam add *)"
     ]
   }
 }
