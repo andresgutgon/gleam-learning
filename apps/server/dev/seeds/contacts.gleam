@@ -5,8 +5,9 @@ import gleam/list
 import gleam/result
 import gleam/string
 import pog
-import shared/domain/contacts/stage.{
-  type PipelineStage, Contact, Customer, Lead, Opportunity,
+import repositories/contacts/repository as contacts_repository
+import shared/contacts/contact.{
+  type PipelineStage, ContactStage, CustomerStage, LeadStage, OpportunityStage,
 }
 
 const seed_contact_count = 300
@@ -29,7 +30,12 @@ const job_titles = [
   "Chief Revenue Officer", "Technical Lead",
 ]
 
-const pipeline_stages = [Lead, Contact, Opportunity, Customer]
+const pipeline_stages = [
+  LeadStage,
+  ContactStage,
+  OpportunityStage,
+  CustomerStage,
+]
 
 type SeedContact {
   SeedContact(
@@ -84,7 +90,7 @@ fn generate_contact(index: Int) -> SeedContact {
 
   let company = get_list_item(companies, company_index, "Unknown Company")
   let title = get_list_item(job_titles, title_index, "Unknown Title")
-  let stage = get_list_item(pipeline_stages, stage_index, Lead)
+  let stage = get_list_item(pipeline_stages, stage_index, LeadStage)
 
   let first_name = name.first_name()
   let last_name = name.last_name()
@@ -154,7 +160,9 @@ fn insert_or_update_contact(
   |> pog.parameter(pog.text(contact.phone))
   |> pog.parameter(pog.text(contact.company))
   |> pog.parameter(pog.text(contact.title))
-  |> pog.parameter(pipeline_stage_to_value(contact.stage))
+  |> pog.parameter(
+    pog.text(contacts_repository.pipeline_stage_to_sql(contact.stage)),
+  )
   |> pog.execute(db)
   |> result.map_error(fn(e) {
     case e {
@@ -169,13 +177,4 @@ fn insert_or_update_contact(
     }
   })
   |> result.replace(Nil)
-}
-
-fn pipeline_stage_to_value(stage: PipelineStage) -> pog.Value {
-  case stage {
-    Customer -> pog.text("customer")
-    Opportunity -> pog.text("opportunity")
-    Contact -> pog.text("contact")
-    Lead -> pog.text("lead")
-  }
 }

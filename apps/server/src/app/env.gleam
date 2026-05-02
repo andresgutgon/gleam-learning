@@ -1,29 +1,40 @@
 import envoy
+import gleam/int
 import gleam/list
 import gleam/result
 import gleam/string
 import simplifile
 
 pub type Env {
-  Env(db_url: String)
+  Env(
+    db_url: String,
+    secret_base_key: String,
+    server_host: String,
+    server_port: Int,
+  )
 }
 
 pub fn load() -> Env {
   ensure_loaded_with([".env", ".env.local"])
-  Env(db_url: require("DATABASE_URL"))
+  set_env_variables()
 }
 
 pub fn load_test() -> Env {
   ensure_loaded_with([".env.test"])
-  Env(db_url: require("DATABASE_URL"))
+  set_env_variables()
 }
 
-pub fn load_from_file(path: String) -> Env {
-  case simplifile.read(path) {
-    Ok(content) -> apply_dotenv(content)
-    Error(_) -> Nil
-  }
-  Env(db_url: require("DATABASE_URL"))
+fn set_env_variables() -> Env {
+  Env(
+    db_url: require("DATABASE_URL"),
+    secret_base_key: require("SECRET_KEY_BASE"),
+    server_host: require("SERVER_HOST"),
+    server_port: case int.parse(require("SERVER_PORT")) {
+      Ok(port) -> port
+      Error(_) ->
+        panic as { "SERVER_PORT environment variable must be a valid integer." }
+    },
+  )
 }
 
 // ---------------------------------------------------------------------------

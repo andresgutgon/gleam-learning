@@ -1,20 +1,13 @@
-import app_context.{type AppContext}
-import gleam/http/request.{type Request}
-import routes/contacts
-import routes/home
-import routes/middleware
-import wisp
-import wisp/internal
+import app/context.{type Context}
+import routes/contacts/route as contacts
+import web
+import wisp.{type Request, type Response}
 
-pub fn handle_request(
-  req: Request(internal.Connection),
-  ctx: AppContext,
-) -> wisp.Response {
-  use req <- middleware.middleware(req)
+pub fn handle_request(req: Request, ctx: Context) -> Response {
+  use req <- web.middleware(req)
 
   case wisp.path_segments(req) {
-    [] -> home.handle(req)
-    ["contacts", ..rest] -> contacts.handle(req, rest, ctx)
+    ["api", "contacts", ..rest] -> contacts.handler(rest, req, ctx)
     _ -> wisp.not_found()
   }
 }

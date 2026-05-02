@@ -1,12 +1,14 @@
-//// Factory for creating test contacts with a builder pattern.
-//// Inspired by Ruby's FactoryBot.
-
+import blah/name as blah_name
+import gleam/bit_array
+import gleam/crypto
 import gleam/option.{type Option, None, Some}
+import gleam/string
 import gleam/time/timestamp
-import shared/domain/contacts/repository.{type Contact, Contact}
-import shared/domain/contacts/stage.{type PipelineStage, Lead}
+import shared/contacts/contact.{
+  type Contact, type PipelineStage, Contact, ContactStage, CustomerStage,
+  LeadStage, OpportunityStage,
+}
 
-/// Factory builder for creating test contacts
 pub type ContactFactory {
   ContactFactory(
     id: Int,
@@ -22,66 +24,54 @@ pub type ContactFactory {
   )
 }
 
-/// Create a new contact factory with sensible defaults
 pub fn new() -> ContactFactory {
+  let first_name = blah_name.first_name()
+  let last_name = blah_name.last_name()
+  let uid =
+    crypto.strong_random_bytes(6)
+    |> bit_array.base16_encode
+    |> string.lowercase
   ContactFactory(
     id: 0,
-    first_name: "John",
-    last_name: "Doe",
-    email: "john.doe@example.com",
+    first_name:,
+    last_name:,
+    email: string.lowercase(first_name)
+      <> "."
+      <> string.lowercase(last_name)
+      <> "+"
+      <> uid
+      <> "@example.com",
     phone: None,
     company: None,
     title: None,
-    stage: Lead,
+    stage: LeadStage,
     profile_picture_url: None,
     notes: None,
   )
 }
 
-/// Create a contact factory with a sequence number for unique data
-pub fn new_with_sequence(seq: Int) -> ContactFactory {
-  let seq_str = int_to_string(seq)
-  ContactFactory(
-    id: 0,
-    first_name: "User" <> seq_str,
-    last_name: "Test" <> seq_str,
-    email: "user" <> seq_str <> "@example.com",
-    phone: None,
-    company: None,
-    title: None,
-    stage: Lead,
-    profile_picture_url: None,
-    notes: None,
-  )
-}
-
-/// Set the first name
 pub fn with_first_name(
   factory: ContactFactory,
   first_name: String,
 ) -> ContactFactory {
-  ContactFactory(..factory, first_name: first_name)
+  ContactFactory(..factory, first_name:)
 }
 
-/// Set the last name
 pub fn with_last_name(
   factory: ContactFactory,
   last_name: String,
 ) -> ContactFactory {
-  ContactFactory(..factory, last_name: last_name)
+  ContactFactory(..factory, last_name:)
 }
 
-/// Set the email
 pub fn with_email(factory: ContactFactory, email: String) -> ContactFactory {
-  ContactFactory(..factory, email: email)
+  ContactFactory(..factory, email:)
 }
 
-/// Set the phone
 pub fn with_phone(factory: ContactFactory, phone: String) -> ContactFactory {
   ContactFactory(..factory, phone: Some(phone))
 }
 
-/// Set the company
 pub fn with_company(
   factory: ContactFactory,
   company: String,
@@ -89,20 +79,17 @@ pub fn with_company(
   ContactFactory(..factory, company: Some(company))
 }
 
-/// Set the title
 pub fn with_title(factory: ContactFactory, title: String) -> ContactFactory {
   ContactFactory(..factory, title: Some(title))
 }
 
-/// Set the pipeline stage
 pub fn with_stage(
   factory: ContactFactory,
   stage: PipelineStage,
 ) -> ContactFactory {
-  ContactFactory(..factory, stage: stage)
+  ContactFactory(..factory, stage:)
 }
 
-/// Set the profile picture URL
 pub fn with_profile_picture_url(
   factory: ContactFactory,
   url: String,
@@ -110,15 +97,11 @@ pub fn with_profile_picture_url(
   ContactFactory(..factory, profile_picture_url: Some(url))
 }
 
-/// Set the notes
 pub fn with_notes(factory: ContactFactory, notes: String) -> ContactFactory {
   ContactFactory(..factory, notes: Some(notes))
 }
 
-/// Build a Contact domain object (without saving to DB)
-/// Useful for testing domain logic or as input to repository methods
 pub fn build(factory: ContactFactory) -> Contact {
-  // Use epoch timestamp as a dummy value - the database will set the real timestamps
   let dummy_timestamp = timestamp.from_unix_seconds(0)
   Contact(
     id: factory.id,
@@ -136,23 +119,18 @@ pub fn build(factory: ContactFactory) -> Contact {
   )
 }
 
-// Helper to convert int to string
-fn int_to_string(i: Int) -> String {
-  case i {
-    0 -> "0"
-    1 -> "1"
-    2 -> "2"
-    3 -> "3"
-    4 -> "4"
-    5 -> "5"
-    6 -> "6"
-    7 -> "7"
-    8 -> "8"
-    9 -> "9"
-    _ -> {
-      let s = int_to_string(i / 10)
-      let digit = int_to_string(i % 10)
-      s <> digit
-    }
-  }
+pub fn build_lead() -> Contact {
+  new() |> with_stage(LeadStage) |> build()
+}
+
+pub fn build_customer() -> Contact {
+  new() |> with_stage(CustomerStage) |> build()
+}
+
+pub fn build_opportunity() -> Contact {
+  new() |> with_stage(OpportunityStage) |> build()
+}
+
+pub fn build_contact_stage() -> Contact {
+  new() |> with_stage(ContactStage) |> build()
 }
