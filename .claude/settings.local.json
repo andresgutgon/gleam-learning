@@ -16,7 +16,8 @@
       "Bash(gleam test *)",
       "Bash(xargs ls *)",
       "Bash(gleam add *)",
-      "Bash(xargs cat *)"
+      "Bash(xargs cat *)",
+      "Bash(gleam *)"
     ]
   }
 }
