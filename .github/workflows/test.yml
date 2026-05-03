@@ -75,3 +75,44 @@ jobs:
       - name: Check formatting
         working-directory: apps/server
         run: gleam format --check src dev test
+
+  client-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Erlang and Gleam
+        uses: erlef/setup-beam@v1
+        with:
+          otp-version: "27.0"
+          elixir-version: "1.18.0"
+          gleam-version: "1.16.0"
+          rebar3-version: "3"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Cache Gleam dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            apps/client/build/packages
+            ~/.cache/gleam
+          key: ${{ runner.os }}-gleam-client-deps-${{ hashFiles('apps/client/manifest.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-gleam-client-deps-
+
+      - name: Download dependencies
+        working-directory: apps/client
+        run: gleam deps download
+
+      - name: Run tests
+        working-directory: apps/client
+        run: gleam test
+
+      - name: Check formatting
+        working-directory: apps/client
+        run: gleam format --check src test

@@ -1,4 +1,4 @@
-name = "crm_shared"
+name = "shared"
 version = "1.0.0"
 
 [dependencies]

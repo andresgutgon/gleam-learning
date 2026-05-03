@@ -1,0 +1,46 @@
+
+header {
+  container-type: scroll-state;
+}
+
+header > div {
+  backdrop-filter: blur(40px) saturate(200%);
+  -webkit-backdrop-filter: blur(40px) saturate(200%);
+  background-color: var(--color-underwater-blue);
+  transition: background-color 300ms ease;
+}
+
+@container scroll-state(stuck: top) {
+  header > div {
+    background-color: rgb(255 251 232 / 0.25);
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  @container scroll-state(stuck: top) {
+    header > div {
+      background-color: rgb(41 45 62 / 0.25);
+    }
+  }
+}
+
+@utility text-header-fg {
+  color: var(--color-gleam-white);
+  transition: color 300ms ease;
+}
+
+@container scroll-state(stuck: top) {
+  .text-header-fg {
+    color: var(--foreground);
+  }
+}
+
+header a[href*="github"] {
+  transition: color 300ms ease, opacity 150ms ease;
+}
+
+@container scroll-state(stuck: top) {
+  a[href*="github"] {
+    color: var(--color-underwater-blue);
+  }
+}

@@ -1,5 +1,5 @@
 import gleam/dynamic/decode
-import gleam/json
+import gleam/json.{type Json}
 import gleam/option.{type Option}
 import gleam/time/calendar
 import gleam/time/timestamp.{type Timestamp}
@@ -30,7 +30,7 @@ pub type Contact {
 
 // --- JSON ---
 
-pub fn to_json(contact: Contact) -> json.Json {
+pub fn to_json(contact: Contact) -> Json {
   json.object([
     #("id", json.int(contact.id)),
     #("first_name", json.string(contact.first_name)),
@@ -53,6 +53,23 @@ pub fn to_json(contact: Contact) -> json.Json {
       "updated_at",
       json.string(timestamp.to_rfc3339(contact.updated_at, calendar.utc_offset)),
     ),
+  ])
+}
+
+pub fn input_to_json(input: ContactInput) -> Json {
+  json.object([
+    #("first_name", json.string(input.first_name)),
+    #("last_name", json.string(input.last_name)),
+    #("email", json.string(input.email)),
+    #("phone", json.nullable(input.phone, json.string)),
+    #("company", json.nullable(input.company, json.string)),
+    #("title", json.nullable(input.title, json.string)),
+    #("stage", json.string(stage_to_string(input.stage))),
+    #(
+      "profile_picture_url",
+      json.nullable(input.profile_picture_url, json.string),
+    ),
+    #("notes", json.nullable(input.notes, json.string)),
   ])
 }
 
@@ -155,6 +172,25 @@ fn stage_to_string(s: PipelineStage) -> String {
     OpportunityStage -> "Opportunity"
     ContactStage -> "Contact"
     LeadStage -> "Lead"
+  }
+}
+
+pub fn stage_to_param(stage: PipelineStage) -> String {
+  case stage {
+    CustomerStage -> "customer"
+    OpportunityStage -> "opportunity"
+    ContactStage -> "contact"
+    LeadStage -> "lead"
+  }
+}
+
+pub fn stage_from_param(s: String) -> option.Option(PipelineStage) {
+  case s {
+    "customer" -> option.Some(CustomerStage)
+    "opportunity" -> option.Some(OpportunityStage)
+    "contact" -> option.Some(ContactStage)
+    "lead" -> option.Some(LeadStage)
+    _ -> option.None
   }
 }
 

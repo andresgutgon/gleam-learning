@@ -3,11 +3,13 @@ import gleam/option.{None, Some}
 import gleam/result
 import pog
 import repositories/contacts/sql
-import shared/contacts/contact.{type Contact, type PipelineStage, Contact}
+import shared/contacts/contact.{
+  type Contact, type ContactInput, type PipelineStage, Contact,
+}
 import shared/contacts/repository.{
   type ListParams, type Repository, type SortDirection, type SortField,
   Ascending, Descending, Repository, SortByCompany, SortByCreatedAt, SortByEmail,
-  SortByFirstName, SortByLastName, SortByUpdatedAt, cursor_from_contact,
+  SortByName, SortByUpdatedAt, cursor_from_contact,
 }
 import shared/error.{
   type DatabaseError, QueryFailed, RecordNotFound, UnexpectedNoRows,
@@ -23,7 +25,7 @@ pub fn new(db: pog.Connection) -> Repository {
   Repository(
     get: fn(id) { get(repo, id) },
     list: fn(params) { list(repo, params) },
-    create: fn(contact) { create(repo, contact) },
+    create: fn(input) { create(repo, input) },
     update: fn(contact) { update(repo, contact) },
     delete: fn(id) { delete(repo, id) },
   )
@@ -108,20 +110,20 @@ fn last_cursor(
 
 pub fn create(
   repo: PogContactsRepository,
-  contact: Contact,
+  input: ContactInput,
 ) -> Result(Contact, DatabaseError) {
   use returned <- result.try(
     sql.create_contact(
       repo.db,
-      contact.first_name,
-      contact.last_name,
-      contact.email,
-      option.unwrap(contact.phone, ""),
-      option.unwrap(contact.company, ""),
-      option.unwrap(contact.title, ""),
-      domain_stage_to_sql(contact.stage),
-      option.unwrap(contact.profile_picture_url, ""),
-      option.unwrap(contact.notes, ""),
+      input.first_name,
+      input.last_name,
+      input.email,
+      option.unwrap(input.phone, ""),
+      option.unwrap(input.company, ""),
+      option.unwrap(input.title, ""),
+      domain_stage_to_sql(input.stage),
+      option.unwrap(input.profile_picture_url, ""),
+      option.unwrap(input.notes, ""),
     )
     |> result.map_error(pog_error_to_repo_error),
   )
@@ -273,8 +275,7 @@ pub fn pipeline_stage_to_sql(s: PipelineStage) -> String {
 
 fn sort_field_to_sql(field: SortField) -> String {
   case field {
-    SortByFirstName -> "first_name"
-    SortByLastName -> "last_name"
+    SortByName -> "name"
     SortByEmail -> "email"
     SortByCompany -> "company"
     SortByCreatedAt -> "created_at"

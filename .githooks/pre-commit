@@ -3,5 +3,5 @@ set -euo pipefail
 
 echo "🎨 Formatting Gleam code..."
 just dev format
-git add apps/server/src apps/server/dev apps/server/test 2>/dev/null || true
+git add apps/server/src apps/server/dev apps/server/test apps/client/src apps/client/test 2>/dev/null || true
 echo "✅ Code formatted successfully"

@@ -8,7 +8,7 @@ import support/app/test_database
 import support/factories/contact as contact_factory
 import wisp/simulate
 
-fn contact_input_json(c: contact.Contact) -> json.Json {
+fn contact_input_json(c: contact.ContactInput) -> json.Json {
   json.object([
     #("first_name", json.string(c.first_name)),
     #("last_name", json.string(c.last_name)),

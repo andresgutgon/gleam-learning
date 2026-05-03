@@ -119,17 +119,12 @@ Each phase is a branch from `main`. When complete, merge back to `main`.
 - [ ] Add Lustre dependency
 - [ ] Define `Model`, `Msg`, `Route` types
 - [ ] Implement `init`, `update`, `view` — contacts list loaded from DB
-- [ ] Set up WebSocket handler in Mist (`/ws` route)
-- [ ] Wire WebSocket to Lustre runtime (`register_subject`, `runtime_message_decoder`, `client_message_to_json`)
-- [ ] Render initial HTML shell with `<lustre-server-component>` + script
 - [ ] Verify: page loads, WebSocket connects, contacts list renders
 - [ ] Commit and merge to `main`
 
 ## Phase 6: Tailwind + theme + dark mode
 
 - [ ] Add `lustre_dev_tools` dev dependency
-- [ ] Create `assets/theme.css` with HSL variables (light + dark)
-- [ ] Create `assets/style.css` with `@import "tailwindcss"` + `@theme` block
 - [ ] Configure `gleam.toml` for lustre_dev_tools
 - [ ] This components should live in `src/packages/ui`. I want to do it in a
     way that in the future can be extacted to a separate package. For do something
@@ -162,6 +157,9 @@ Each phase is a branch from `main`. When complete, merge back to `main`.
 - [ ] Implement virtualized list in contacts view to handle large datasets efficiently
 - [ ] Verify: smooth scrolling and rendering with 300+ contacts, no performance issues
 - [ ] How to do windowing/virtualization with server components? We can do it with client JS, but is there a way to do it with Lustre components? Maybe we can implement a `VirtualList` component that only renders visible items and emits events for loading more as the user scrolls. Let's research best practices for this in the context of server components. Add a new `./prd/virtualized-list.md` document to explore this topic in depth.
+
+## Phase 7.2: Implement WebSocket updates for real-time sync
+- [ ] Set up WebSocket handler in Mist (`/ws` route)
 
 ## Phase 8: Navigation
 
