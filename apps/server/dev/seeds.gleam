@@ -1,4 +1,4 @@
-import env
+import app/env
 import gleam/erlang/process
 import gleam/io
 import gleam/otp/actor

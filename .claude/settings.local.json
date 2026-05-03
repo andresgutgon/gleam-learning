@@ -4,6 +4,7 @@
       "Bash(just squirrel *)",
       "Bash(mise exec *)",
       "Bash(cat)",
+      "Bash(just --justfile /tmp/check_in_project.just --working-directory /Users/andres/code/opensource/gleam-learning check)",
       "Bash(just test *)",
       "Bash(git checkout *)",
       "Bash(git add *)",
@@ -12,7 +13,11 @@
       "Bash(gh pr *)",
       "Bash(gleam build *)",
       "Bash(gleam run *)",
-      "Bash(gleam test *)"
+      "Bash(gleam test *)",
+      "Bash(xargs ls *)",
+      "Bash(gleam add *)",
+      "Bash(xargs cat *)",
+      "Bash(gleam *)"
     ]
   }
 }

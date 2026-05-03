@@ -44,15 +44,15 @@ jobs:
         run: |
           PGPASSWORD=${{ env.POSTGRES_PASSWORD }} psql -h localhost -U ${{ env.POSTGRES_USER }} -d ${{ env.POSTGRES_DB }} -c "CREATE EXTENSION IF NOT EXISTS pg_trgm;"
 
-      - name: Cache build artifacts
+      - name: Cache Gleam dependencies
         uses: actions/cache@v4
         with:
           path: |
-            apps/server/build
+            apps/server/build/packages
             ~/.cache/gleam
-          key: ${{ runner.os }}-gleam-${{ hashFiles('**/gleam.toml') }}-${{ hashFiles('**/manifest.toml') }}
+          key: ${{ runner.os }}-gleam-deps-${{ hashFiles('**/manifest.toml') }}
           restore-keys: |
-            ${{ runner.os }}-gleam-
+            ${{ runner.os }}-gleam-deps-
 
       - name: Download dependencies
         working-directory: apps/server
