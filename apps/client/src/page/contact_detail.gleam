@@ -40,6 +40,7 @@ pub fn fetch_effect(id: Int) -> Effect(Result(Contact, ApiError)) {
 pub fn query(
   id: Int,
   c: cache.Cache,
+  placeholder: Option(Contact),
   on_result: fn(Int, Result(Contact, ApiError)) -> msg,
 ) -> #(cache.Cache, Effect(msg)) {
   let entry = dict.get(c.contact, id) |> result.unwrap(gquery.NotAsked)
@@ -47,7 +48,7 @@ pub fn query(
     gq.query(
       entry: entry,
       stale_ms: gquery.never_stale,
-      placeholder: option.None,
+      placeholder: placeholder,
       fetch: fetch_effect(id),
       on_result: fn(r) { on_result(id, r) },
     )
@@ -69,7 +70,7 @@ pub fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
   case msg {
     UserClickedBack ->
       case browser.check_came_from_contacts() {
-        True -> #(model, modem.back(1))
+        True -> #(model, effect.from(fn(_) { browser.history_back() }))
         False -> #(
           model,
           modem.push(
@@ -90,6 +91,7 @@ pub fn view(_model: Model, entry: Entry(Contact, ApiError)) -> Element(Msg) {
           "flex items-center gap-1.5 text-sm text-muted-foreground"
           <> " hover:text-foreground transition-colors",
         ),
+        attribute.attribute("data-vt", "back"),
         event.on_click(UserClickedBack),
       ],
       [
@@ -101,24 +103,59 @@ pub fn view(_model: Model, entry: Entry(Contact, ApiError)) -> Element(Msg) {
       ],
     ),
     case entry {
-      gquery.Loading(_) | gquery.NotAsked -> view_loading()
+      gquery.Loading(option.Some(contact)) -> view_contact(contact)
+      gquery.Loading(_) | gquery.NotAsked -> view_skeleton()
       gquery.Failed(err) -> view_error(err)
       gquery.Loaded(contact, _) -> view_contact(contact)
     },
   ])
 }
 
-fn view_loading() -> Element(Msg) {
-  html.div([attribute.class("flex justify-center py-20")], [
-    html.div(
-      [
-        attribute.class(
-          "w-8 h-8 rounded-full border-2 border-border border-t-faff-pink animate-spin",
+fn view_skeleton() -> Element(Msg) {
+  html.div(
+    [attribute.class("rounded-xl border border-border bg-card p-6 space-y-4")],
+    [
+      html.div([attribute.class("flex items-start justify-between gap-4")], [
+        html.div(
+          [
+            attribute.class(
+              "h-8 w-56 rounded-md bg-muted animate-pulse leading-tight",
+            ),
+            attribute.attribute("data-vt", "contact-name"),
+            attribute.style("view-transition-name", "contact-name"),
+          ],
+          [],
         ),
-      ],
-      [],
-    ),
-  ])
+        html.div(
+          [
+            attribute.class("h-5 w-20 rounded-full bg-muted animate-pulse"),
+            attribute.attribute("data-vt", "contact-stage"),
+            attribute.style("view-transition-name", "contact-stage"),
+          ],
+          [],
+        ),
+      ]),
+      html.div([attribute.class("h-px bg-border")], []),
+      html.div([attribute.class("flex items-center gap-3")], [
+        html.span(
+          [
+            attribute.class(
+              "icon-[lucide--mail] text-lg text-muted-foreground shrink-0",
+            ),
+          ],
+          [],
+        ),
+        html.div(
+          [
+            attribute.class("h-4 w-48 rounded bg-muted animate-pulse"),
+            attribute.attribute("data-vt", "contact-email"),
+            attribute.style("view-transition-name", "contact-email"),
+          ],
+          [],
+        ),
+      ]),
+    ],
+  )
 }
 
 fn view_error(err: ApiError) -> Element(Msg) {
@@ -138,11 +175,19 @@ fn view_contact(contact: Contact) -> Element(Msg) {
               attribute.class(
                 "text-2xl font-bold text-foreground leading-tight",
               ),
+              attribute.attribute("data-vt", "contact-name"),
+              attribute.style("view-transition-name", "contact-name"),
             ],
             [element.text(contact.first_name <> " " <> contact.last_name)],
           ),
         ]),
-        stage_badge.view(contact.stage),
+        html.div(
+          [
+            attribute.attribute("data-vt", "contact-stage"),
+            attribute.style("view-transition-name", "contact-stage"),
+          ],
+          [stage_badge.view(contact.stage)],
+        ),
       ]),
       html.div([attribute.class("h-px bg-border")], []),
       view_field(
@@ -153,6 +198,8 @@ fn view_contact(contact: Contact) -> Element(Msg) {
             attribute.class(
               "text-sm text-foreground hover:text-faff-pink transition-colors",
             ),
+            attribute.attribute("data-vt", "contact-email"),
+            attribute.style("view-transition-name", "contact-email"),
           ],
           [element.text(contact.email)],
         ),

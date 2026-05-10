@@ -1,4 +1,5 @@
 import gleam/dict
+import gleam/int
 import gleam/javascript/promise
 import gleam/list
 import gleam/option.{type Option}
@@ -103,6 +104,17 @@ pub fn from_query_string(q: String, scroll: Int) -> Model {
   Model(
     ..base,
     virtualizer: virtual_list.set_scroll_offset(base.virtualizer, scroll),
+  )
+}
+
+/// Seed the virtualizer's container size. Used on back-navigation so the
+/// first render after popstate already has a visible range (otherwise the
+/// virtualizer emits no rows until the resize observer fires, which is too
+/// late for the view-transition snapshot).
+pub fn with_container_size(model: Model, size: Int) -> Model {
+  Model(
+    ..model,
+    virtualizer: virtual_list.set_container_size(model.virtualizer, size),
   )
 }
 
@@ -265,19 +277,18 @@ pub fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
     }
     UserClickedContact(id) -> {
       let back = cache_key(model)
+      let path =
+        route.to_path(route.ContactDetail(id))
+        <> "?back="
+        <> uri.percent_encode(back)
       #(
         model,
-        effect.batch([
-          effect.from(fn(_) { browser.save_scroll_to_history() }),
-          modem.push(
-            route.to_path(route.ContactDetail(id)),
-            option.Some("back=" <> uri.percent_encode(back)),
-            option.None,
-          ),
-          // Mark the new detail history entry so the back button knows it can
-          // use history.back() to return to the contacts entry with scrollTop.
-          effect.from(fn(_) { browser.mark_came_from_contacts() }),
-        ]),
+        effect.from(fn(_) {
+          browser.save_scroll_to_history()
+          browser.navigate_with_view_transition(id, path, fn() {
+            browser.mark_came_from_contacts()
+          })
+        }),
       )
     }
     ContainerScrolled(top) -> {
@@ -504,6 +515,7 @@ fn render_contact_row(
         contact,
         template,
         option.Some(fn(c: Contact) { UserClickedContact(c.id) }),
+        [attribute.attribute("data-contact-id", int.to_string(contact.id))],
       )
   }
 }
@@ -535,7 +547,7 @@ fn columns(
         html.span(
           [
             attribute.class(
-              "text-sm font-medium text-foreground truncate w-full min-w-0",
+              "text-sm font-medium text-foreground truncate w-full min-w-0 vt-contact-name",
             ),
           ],
           [element.text(c.first_name <> " " <> c.last_name)],
@@ -545,7 +557,11 @@ fn columns(
     table.Column(
       header: table.plain_header("Stage"),
       width: "140px",
-      cell: table.Custom(fn(c: Contact) { stage_badge.view(c.stage) }),
+      cell: table.Custom(fn(c: Contact) {
+        html.div([attribute.class("vt-contact-stage")], [
+          stage_badge.view(c.stage),
+        ])
+      }),
     ),
     table.Column(
       header: table.sort_header(
@@ -556,7 +572,16 @@ fn columns(
         on_click: UserClickedSort(EmailColumn),
       ),
       width: "200px",
-      cell: table.Text(fn(c: Contact) { c.email }),
+      cell: table.Custom(fn(c: Contact) {
+        html.span(
+          [
+            attribute.class(
+              "text-sm text-muted-foreground truncate block vt-contact-email",
+            ),
+          ],
+          [element.text(c.email)],
+        )
+      }),
     ),
     table.Column(
       header: table.sort_header(

@@ -7,8 +7,10 @@ import gquery
 import lib/browser
 import lib/cache.{type Cache}
 import lib/error.{type ApiError}
+import lustre/attribute
 import lustre/effect.{type Effect}
 import lustre/element.{type Element}
+import lustre/element/html
 import modem
 import page/contact_detail
 import page/contacts
@@ -23,7 +25,14 @@ pub type Model {
 
 pub type AppPage {
   ContactsPage(contacts.Model)
-  ContactDetailPage(contact_detail.Model)
+  // The contacts model is preserved across the detail-page detour so back
+  // navigation restores virtualizer state (scroll_offset, container_size,
+  // item measurements) without reconstruction — the view-transition snapshot
+  // needs the matching row in the DOM at the right position immediately.
+  ContactDetailPage(
+    detail: contact_detail.Model,
+    previous_contacts: option.Option(contacts.Model),
+  )
 }
 
 pub type Msg {
@@ -57,37 +66,65 @@ pub fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
         // Sort/filter/search changes while on contacts — re-query cache, no forced refetch.
         route.Contacts, ContactsPage(_) -> #(model, effect.none())
 
-        // Back from detail — restore contacts UI from back_query, re-query cache.
-        route.Contacts, ContactDetailPage(detail_model) -> {
-          let scroll = browser.read_scroll_from_history()
-          let contacts_model = case detail_model.back_query {
-            option.None -> contacts.default()
-            option.Some(q) -> contacts.from_query_string(q, scroll)
-          }
-          let #(new_cache, fetch_eff) =
-            contacts.load(
-              contacts_model,
-              model.cache,
-              option.None,
-              CacheGotContacts,
+        // Back from detail. When contacts was preserved, no work is needed —
+        // its DOM has been mounted underneath the detail overlay the whole
+        // time; we just flip the state to remove the overlay. Direct-load
+        // fallback rebuilds the contacts model from the back_query.
+        route.Contacts, ContactDetailPage(detail_model, previous_contacts) -> {
+          case previous_contacts {
+            option.Some(m) -> #(
+              Model(page: ContactsPage(m), cache: model.cache),
+              effect.none(),
             )
-          let observe_eff =
-            contacts.observe_effect() |> effect.map(ContactsPageSentMsg)
-          let scroll_eff =
-            effect.from(fn(_) { browser.scroll_window_to(scroll) })
-          #(
-            Model(page: ContactsPage(contacts_model), cache: new_cache),
-            effect.batch([fetch_eff, observe_eff, scroll_eff]),
-          )
+            option.None -> {
+              let scroll = browser.read_scroll_from_history()
+              let viewport = browser.window_inner_height()
+              let base = case detail_model.back_query {
+                option.None -> contacts.default()
+                option.Some(q) -> contacts.from_query_string(q, scroll)
+              }
+              let contacts_model = contacts.with_container_size(base, viewport)
+              let #(new_cache, fetch_eff) =
+                contacts.load(
+                  contacts_model,
+                  model.cache,
+                  option.None,
+                  CacheGotContacts,
+                )
+              let observe_eff =
+                contacts.observe_effect() |> effect.map(ContactsPageSentMsg)
+              let scroll_eff =
+                effect.from(fn(_) { browser.scroll_window_to(scroll) })
+              #(
+                Model(page: ContactsPage(contacts_model), cache: new_cache),
+                effect.batch([fetch_eff, observe_eff, scroll_eff]),
+              )
+            }
+          }
         }
 
-        // Navigate to a contact.
+        // Navigate to a contact. Capture the current contacts model so back
+        // can restore it without reconstruction. Also pull the row's data
+        // out of the list cache as a placeholder so the detail page renders
+        // the real name/stage/email immediately — the view-transition morph
+        // looks the same whether or not the full contact is cached.
         route.ContactDetail(id), _ -> {
           let detail_model = contact_detail.init(id, back_query_from_uri(uri))
+          let previous_contacts = case model.page {
+            ContactsPage(m) -> option.Some(m)
+            ContactDetailPage(_, prev) -> prev
+          }
+          let placeholder = case previous_contacts {
+            option.Some(m) -> find_contact_in_list(model.cache, m, id)
+            option.None -> option.None
+          }
           let #(new_cache, fetch_eff) =
-            contact_detail.query(id, model.cache, CacheGotContact)
+            contact_detail.query(id, model.cache, placeholder, CacheGotContact)
           #(
-            Model(page: ContactDetailPage(detail_model), cache: new_cache),
+            Model(
+              page: ContactDetailPage(detail_model, previous_contacts),
+              cache: new_cache,
+            ),
             fetch_eff,
           )
         }
@@ -129,11 +166,11 @@ pub fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
       )
     }
 
-    ContactDetailPageSentMsg(page_msg), ContactDetailPage(page_model) -> {
+    ContactDetailPageSentMsg(page_msg), ContactDetailPage(page_model, prev) -> {
       let #(new_page_model, page_eff) =
         contact_detail.update(page_model, page_msg)
       #(
-        Model(..model, page: ContactDetailPage(new_page_model)),
+        Model(..model, page: ContactDetailPage(new_page_model, prev)),
         effect.map(page_eff, ContactDetailPageSentMsg),
       )
     }
@@ -164,23 +201,44 @@ pub fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
 }
 
 pub fn view(model: Model) -> Element(Msg) {
-  let content = case model.page {
-    ContactsPage(page_model) -> {
-      let key = contacts.cache_key(page_model)
+  // Contacts stays mounted whenever we have a model for it (current page or
+  // preserved through a detail-page detour). Detail renders as a fixed-position
+  // overlay above it. This avoids re-mounting the virtualizer on back, which
+  // is what makes the view-transition snapshot reliable.
+  let contacts_model = case model.page {
+    ContactsPage(m) -> option.Some(m)
+    ContactDetailPage(_, prev) -> prev
+  }
+  let contacts_layer = case contacts_model {
+    option.Some(m) -> {
+      let key = contacts.cache_key(m)
       let entry =
         dict.get(model.cache.contacts, key)
         |> result.unwrap(gquery.NotAsked)
-      contacts.view(page_model, entry) |> element.map(ContactsPageSentMsg)
+      contacts.view(m, entry) |> element.map(ContactsPageSentMsg)
     }
-    ContactDetailPage(page_model) -> {
-      let entry =
-        dict.get(model.cache.contact, page_model.contact_id)
-        |> result.unwrap(gquery.NotAsked)
-      contact_detail.view(page_model, entry)
-      |> element.map(ContactDetailPageSentMsg)
-    }
+    option.None -> element.none()
   }
-  layout.view(content)
+  let detail_layer = case model.page {
+    ContactDetailPage(detail, _) -> {
+      let entry =
+        dict.get(model.cache.contact, detail.contact_id)
+        |> result.unwrap(gquery.NotAsked)
+      html.div(
+        [
+          attribute.class("fixed inset-0 z-[60] bg-background overflow-auto"),
+        ],
+        [
+          layout.view(
+            contact_detail.view(detail, entry)
+            |> element.map(ContactDetailPageSentMsg),
+          ),
+        ],
+      )
+    }
+    ContactsPage(_) -> element.none()
+  }
+  layout.view(html.div([], [contacts_layer, detail_layer]))
 }
 
 // --- Init helpers ---
@@ -207,7 +265,7 @@ fn page_from_uri(uri: Uri) -> #(AppPage, Cache, Effect(Msg)) {
       let back_query = back_query_from_uri(uri)
       let detail_model = contact_detail.init(id, back_query)
       let #(cache_with_contact, contact_eff) =
-        contact_detail.query(id, empty, CacheGotContact)
+        contact_detail.query(id, empty, option.None, CacheGotContact)
       let #(new_cache, contacts_eff) = case back_query {
         option.None -> #(cache_with_contact, effect.none())
         option.Some(q) ->
@@ -219,7 +277,7 @@ fn page_from_uri(uri: Uri) -> #(AppPage, Cache, Effect(Msg)) {
           )
       }
       #(
-        ContactDetailPage(detail_model),
+        ContactDetailPage(detail_model, option.None),
         new_cache,
         effect.batch([contact_eff, contacts_eff, redirect]),
       )
@@ -239,8 +297,8 @@ fn page_from_route(r: route.Route) -> #(AppPage, Cache, Effect(Msg)) {
     route.ContactDetail(id) -> {
       let detail_model = contact_detail.init(id, option.None)
       let #(new_cache, fetch_eff) =
-        contact_detail.query(id, empty, CacheGotContact)
-      #(ContactDetailPage(detail_model), new_cache, fetch_eff)
+        contact_detail.query(id, empty, option.None, CacheGotContact)
+      #(ContactDetailPage(detail_model, option.None), new_cache, fetch_eff)
     }
   }
 }
@@ -255,4 +313,21 @@ fn back_query_from_uri(uri: Uri) -> option.Option(String) {
       |> result.map(fn(pair: #(String, String)) { pair.1 })
       |> option.from_result
   }
+}
+
+/// Look up a contact by id in the list cache for a given contacts model.
+/// Returns the Contact from the loaded page if present — used as a placeholder
+/// for the detail page so the view-transition morph has real text content
+/// to interpolate into instead of an empty skeleton block.
+fn find_contact_in_list(
+  c: Cache,
+  contacts_model: contacts.Model,
+  id: Int,
+) -> option.Option(Contact) {
+  let key = contacts.cache_key(contacts_model)
+  use entry <- option.then(dict.get(c.contacts, key) |> option.from_result)
+  use il <- option.then(gquery.get_data(entry))
+  il.items
+  |> list.find(fn(contact: Contact) { contact.id == id })
+  |> option.from_result
 }
