@@ -1,7 +1,7 @@
 import gleam/option.{type Option}
 import gleam/time/calendar
 import gleam/time/timestamp
-import shared/contacts/contact.{type Contact, type PipelineStage}
+import shared/contacts/contact.{type Contact, type ContactInput, type PipelineStage}
 import shared/error.{type DatabaseError}
 import shared/pagination.{type Cursor, type Page, Cursor}
 
@@ -9,7 +9,7 @@ pub type Repository {
   Repository(
     get: fn(Int) -> Result(Contact, DatabaseError),
     list: fn(ListParams) -> Result(Page(Contact), DatabaseError),
-    create: fn(Contact) -> Result(Contact, DatabaseError),
+    create: fn(ContactInput) -> Result(Contact, DatabaseError),
     update: fn(Contact) -> Result(Contact, DatabaseError),
     delete: fn(Int) -> Result(Nil, DatabaseError),
   )
@@ -34,8 +34,7 @@ pub type ListParams {
 }
 
 pub type SortField {
-  SortByFirstName
-  SortByLastName
+  SortByName
   SortByEmail
   SortByCompany
   SortByCreatedAt
@@ -45,6 +44,42 @@ pub type SortField {
 pub type SortDirection {
   Ascending
   Descending
+}
+
+// --- String conversions ---
+
+pub fn sort_field_to_string(sort_by: SortField) -> String {
+  case sort_by {
+    SortByName -> "name"
+    SortByEmail -> "email"
+    SortByCompany -> "company"
+    SortByCreatedAt -> "created_at"
+    SortByUpdatedAt -> "updated_at"
+  }
+}
+
+pub fn sort_field_from_string(s: String) -> SortField {
+  case s {
+    "name" -> SortByName
+    "email" -> SortByEmail
+    "company" -> SortByCompany
+    "updated_at" -> SortByUpdatedAt
+    _ -> SortByCreatedAt
+  }
+}
+
+pub fn sort_direction_to_string(direction: SortDirection) -> String {
+  case direction {
+    Ascending -> "asc"
+    Descending -> "desc"
+  }
+}
+
+pub fn sort_direction_from_string(s: String) -> SortDirection {
+  case s {
+    "asc" -> Ascending
+    _ -> Descending
+  }
 }
 
 // --- Cursor helpers ---
@@ -57,8 +92,7 @@ pub fn cursor_from_contact(contact: Contact, sort_by: SortField) -> Cursor {
 
 fn cursor_value_for(contact: Contact, sort_by: SortField) -> String {
   case sort_by {
-    SortByFirstName -> contact.first_name
-    SortByLastName -> contact.last_name
+    SortByName -> contact.first_name <> " " <> contact.last_name
     SortByEmail -> contact.email
     SortByCompany -> option.unwrap(contact.company, "")
     SortByCreatedAt ->

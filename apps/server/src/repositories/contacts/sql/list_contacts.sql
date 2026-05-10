@@ -46,10 +46,8 @@ WHERE
   -- Keyset cursor predicate. Skipped entirely when no cursor is set ($11 = 0).
   ($11 = 0 OR
     CASE
-      WHEN $7 = 'first_name' AND $8 = 'ASC'  THEN (first_name, id) > ($10, $11)
-      WHEN $7 = 'first_name' AND $8 = 'DESC' THEN (first_name, id) < ($10, $11)
-      WHEN $7 = 'last_name'  AND $8 = 'ASC'  THEN (last_name, id)  > ($10, $11)
-      WHEN $7 = 'last_name'  AND $8 = 'DESC' THEN (last_name, id)  < ($10, $11)
+      WHEN $7 = 'name'       AND $8 = 'ASC'  THEN (first_name || ' ' || last_name, id) > ($10, $11)
+      WHEN $7 = 'name'       AND $8 = 'DESC' THEN (first_name || ' ' || last_name, id) < ($10, $11)
       WHEN $7 = 'email'      AND $8 = 'ASC'  THEN (email, id)      > ($10, $11)
       WHEN $7 = 'email'      AND $8 = 'DESC' THEN (email, id)      < ($10, $11)
       WHEN $7 = 'company'    AND $8 = 'ASC'  THEN (COALESCE(company, ''), id) > ($10, $11)
@@ -62,10 +60,8 @@ WHERE
     END
   )
 ORDER BY
-  CASE WHEN $7 = 'first_name' AND $8 = 'ASC'  THEN first_name END ASC,
-  CASE WHEN $7 = 'first_name' AND $8 = 'DESC' THEN first_name END DESC,
-  CASE WHEN $7 = 'last_name'  AND $8 = 'ASC'  THEN last_name  END ASC,
-  CASE WHEN $7 = 'last_name'  AND $8 = 'DESC' THEN last_name  END DESC,
+  CASE WHEN $7 = 'name'       AND $8 = 'ASC'  THEN first_name || ' ' || last_name END ASC,
+  CASE WHEN $7 = 'name'       AND $8 = 'DESC' THEN first_name || ' ' || last_name END DESC,
   CASE WHEN $7 = 'email'      AND $8 = 'ASC'  THEN email      END ASC,
   CASE WHEN $7 = 'email'      AND $8 = 'DESC' THEN email      END DESC,
   CASE WHEN $7 = 'company'    AND $8 = 'ASC'  THEN COALESCE(company, '') END ASC,

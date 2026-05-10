@@ -1,0 +1,77 @@
+@import "tailwindcss";
+@plugin "@iconify/tailwind4";
+@import "./css/animations.css";
+@import "./css/hit-area.css";
+@import "./css/header-scroll.css";
+@import "./css/custom-scrollbars.css";
+
+/*
+  Brand color palette in OKLCH (perceptual, gamut-mappable).
+  Available as Tailwind utilities: bg-faff-pink, text-charcoal, etc.
+*/
+@theme {
+  --font-sans: 'Lexend', sans-serif;
+
+  /* Gleam brand palette, from light to dark. */
+  /* https://gleam.run/branding */
+
+  /* #ffaff3 */ --color-faff-pink:       oklch(85%   0.127  332);
+  /* #fefefc */ --color-gleam-white:     oklch(99.6% 0.003  109);
+  /* #a6f0fc */ --color-unnamed-blue:    oklch(91%   0.075  208);
+  /* #fffbe8 */ --color-aged-plastic:    oklch(98.6% 0.025   97);
+  /* #584355 */ --color-aubergine:       oklch(41%   0.038  330);
+  /* #292d3e */ --color-underwater-blue: oklch(30%   0.031  273);
+  /* #2f2f2f */ --color-charcoal:        oklch(31%   0       0);
+  /* #1e1e1e */ --color-almost-black:    oklch(24%   0       0);
+  /* #151515 */ --color-blacker:         oklch(20%   0       0);
+}
+
+/*
+  Semantic tokens — shadcn background/foreground strategy.
+  Light mode defaults; dark overrides via prefers-color-scheme.
+
+  @theme inline maps each token to a Tailwind utility (bg-background,
+  text-foreground, text-muted-foreground, border-border, etc.) while keeping
+  the CSS-variable indirection so dark mode still works at runtime.
+*/
+@theme inline {
+  --color-background:       var(--background);
+  --color-foreground:       var(--foreground);
+  --color-muted:            var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border:           var(--border);
+  --color-accent:           var(--accent);
+  --color-accent-subtle:    var(--accent-subtle);
+  --color-input-bg:         var(--input-bg);
+}
+
+:root {
+  --background:           oklch(98.6% 0.025   97);
+  --foreground:           oklch(31%   0        0);
+  --muted:                oklch(93%   0.022   97);
+  --muted-foreground:     oklch(63%   0        0);
+  --border:               oklch(93%   0.005  100);
+  --accent:               oklch(91%   0.075  208);
+  --accent-subtle:        oklch(97%   0.030  218);
+  --header-bg-scrolled:   oklch(98.6% 0.025   97 / 0.82);
+  --input-bg:             oklch(99.6% 0.003  109);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background:          oklch(30%   0.031  273);
+    --foreground:          oklch(99.6% 0.003  109);
+    --muted:               oklch(26%   0.040  262);
+    --muted-foreground:    oklch(71%   0.033  258);
+    --border:              oklch(39%   0.050  262);
+    --accent:              oklch(91%   0.075  208);
+    --accent-subtle:       oklch(30%   0.055  218);
+    --header-bg-scrolled:  oklch(30%   0.031  273 / 0.82);
+    --input-bg:            oklch(35%   0.031  273);
+  }
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+}

@@ -10,7 +10,7 @@ import pog
 import shared/contacts/contact.{type PipelineStage}
 import shared/contacts/repository.{
   type ListParams, type SortDirection, type SortField, Ascending, ListParams,
-  SortByFirstName,
+  SortByName,
 }
 
 @external(erlang, "shell", "strings")
@@ -36,7 +36,7 @@ pub fn default_list_params() -> ListParams {
     email: None,
     phone: None,
     title: None,
-    sort_by: SortByFirstName,
+    sort_by: SortByName,
     sort_direction: Ascending,
     cursor: None,
     limit: 10,

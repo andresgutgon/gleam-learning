@@ -33,7 +33,7 @@ fn create(req: Request, ctx: Context) -> Response {
   let repo = contacts_repository.new(db)
   use body <- wisp.require_json(req)
   use input <- web.decode_body(body, contact.input_decoder())
-  use created <- web.db_execute(repo.create(contact.to_contact(0, input)))
+  use created <- web.db_execute(repo.create(input))
 
   created
   |> contact.to_json

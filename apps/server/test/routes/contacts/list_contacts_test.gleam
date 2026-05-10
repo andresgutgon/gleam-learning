@@ -194,7 +194,7 @@ pub fn list_contacts_filter_by_search_test() {
   assert list.length(contacts) == 2
 }
 
-pub fn list_contacts_sort_by_first_name_asc_test() {
+pub fn list_contacts_sort_by_name_asc_test() {
   let ctx = test_context.get()
   use ctx <- test_database.with_rollback(ctx)
 
@@ -220,10 +220,7 @@ pub fn list_contacts_sort_by_first_name_asc_test() {
     |> repo.create
 
   let response =
-    simulate.request(
-      http.Get,
-      "/api/contacts?sort_by=first_name&sort_direction=asc",
-    )
+    simulate.request(http.Get, "/api/contacts?sort_by=name&sort_direction=asc")
     |> router.handle_request(ctx)
 
   assert response.status == 200
@@ -235,6 +232,54 @@ pub fn list_contacts_sort_by_first_name_asc_test() {
   assert first.first_name == "Alice"
   assert second.first_name == "Bob"
   assert third.first_name == "Charlie"
+}
+
+pub fn list_contacts_sort_by_name_uses_last_name_as_tiebreak_test() {
+  let ctx = test_context.get()
+  use ctx <- test_database.with_rollback(ctx)
+
+  let db = context.db_conn(ctx)
+  let repo = contacts_repository.new(db)
+  // Same first name, different last names — insertion order gives Johnson id > Smith id,
+  // so without last_name as secondary sort the bug returns Smith before Johnson.
+  let assert Ok(_) =
+    contact_factory.new()
+    |> contact_factory.with_first_name("Alice")
+    |> contact_factory.with_last_name("Smith")
+    |> contact_factory.with_email("a.smith@example.com")
+    |> contact_factory.build()
+    |> repo.create
+  let assert Ok(_) =
+    contact_factory.new()
+    |> contact_factory.with_first_name("Alice")
+    |> contact_factory.with_last_name("Johnson")
+    |> contact_factory.with_email("a.johnson@example.com")
+    |> contact_factory.build()
+    |> repo.create
+  let assert Ok(_) =
+    contact_factory.new()
+    |> contact_factory.with_first_name("Bob")
+    |> contact_factory.with_last_name("Adams")
+    |> contact_factory.with_email("b.adams@example.com")
+    |> contact_factory.build()
+    |> repo.create
+
+  let response =
+    simulate.request(http.Get, "/api/contacts?sort_by=name&sort_direction=asc")
+    |> router.handle_request(ctx)
+
+  assert response.status == 200
+
+  let body = simulate.read_body(response)
+  let assert Ok(#(contacts, _)) = json.parse(body, page_decoder())
+  let assert [first, second, third] = contacts
+
+  // Full-name order: "Alice Johnson" < "Alice Smith" < "Bob Adams"
+  assert first.first_name == "Alice"
+  assert first.last_name == "Johnson"
+  assert second.first_name == "Alice"
+  assert second.last_name == "Smith"
+  assert third.first_name == "Bob"
 }
 
 pub fn list_contacts_sort_by_email_desc_test() {
@@ -289,18 +334,21 @@ pub fn list_contacts_cursor_first_page_has_next_cursor_test() {
   let assert Ok(_) =
     contact_factory.new()
     |> contact_factory.with_first_name("Alice")
+    |> contact_factory.with_last_name("Adams")
     |> contact_factory.with_email("a@example.com")
     |> contact_factory.build()
     |> repo.create
   let assert Ok(_) =
     contact_factory.new()
     |> contact_factory.with_first_name("Bob")
+    |> contact_factory.with_last_name("Brown")
     |> contact_factory.with_email("b@example.com")
     |> contact_factory.build()
     |> repo.create
   let assert Ok(_) =
     contact_factory.new()
     |> contact_factory.with_first_name("Charlie")
+    |> contact_factory.with_last_name("Clark")
     |> contact_factory.with_email("c@example.com")
     |> contact_factory.build()
     |> repo.create
@@ -308,7 +356,7 @@ pub fn list_contacts_cursor_first_page_has_next_cursor_test() {
   let response =
     simulate.request(
       http.Get,
-      "/api/contacts?sort_by=first_name&sort_direction=asc&limit=2",
+      "/api/contacts?sort_by=name&sort_direction=asc&limit=2",
     )
     |> router.handle_request(ctx)
 
@@ -321,7 +369,7 @@ pub fn list_contacts_cursor_first_page_has_next_cursor_test() {
   assert first.first_name == "Alice"
   assert second.first_name == "Bob"
   let assert Some(cursor) = next_cursor
-  assert cursor.value == "Bob"
+  assert cursor.value == "Bob Brown"
   assert cursor.id == second.id
 }
 
@@ -343,7 +391,7 @@ pub fn list_contacts_cursor_last_page_has_no_next_cursor_test() {
   let response =
     simulate.request(
       http.Get,
-      "/api/contacts?sort_by=first_name&sort_direction=asc&limit=10",
+      "/api/contacts?sort_by=name&sort_direction=asc&limit=10",
     )
     |> router.handle_request(ctx)
 
@@ -393,7 +441,7 @@ pub fn list_contacts_cursor_walks_pages_test() {
     |> contact_factory.build()
     |> repo.create
 
-  let base_url = "/api/contacts?sort_by=first_name&sort_direction=asc&limit=2"
+  let base_url = "/api/contacts?sort_by=name&sort_direction=asc&limit=2"
 
   let response1 =
     simulate.request(http.Get, base_url)
@@ -429,4 +477,141 @@ pub fn list_contacts_cursor_walks_pages_test() {
   let assert [e] = page3
   assert e.first_name == "Eve"
   assert next_cursor3 == None
+}
+
+pub fn list_contacts_search_is_case_insensitive_test() {
+  let ctx = test_context.get()
+  use ctx <- test_database.with_rollback(ctx)
+
+  let db = context.db_conn(ctx)
+  let repo = contacts_repository.new(db)
+  let assert Ok(_) =
+    contact_factory.new()
+    |> contact_factory.with_first_name("Alice")
+    |> contact_factory.with_last_name("Smith")
+    |> contact_factory.build()
+    |> repo.create
+  let assert Ok(_) =
+    contact_factory.new()
+    |> contact_factory.with_first_name("Bob")
+    |> contact_factory.with_last_name("Jones")
+    |> contact_factory.build()
+    |> repo.create
+
+  let response =
+    simulate.request(http.Get, "/api/contacts?search=alice")
+    |> router.handle_request(ctx)
+
+  assert response.status == 200
+
+  let body = simulate.read_body(response)
+  let assert Ok(#(contacts, _)) = json.parse(body, page_decoder())
+
+  assert list.length(contacts) == 1
+  let assert [c] = contacts
+  assert c.first_name == "Alice"
+}
+
+pub fn list_contacts_search_matches_last_name_test() {
+  let ctx = test_context.get()
+  use ctx <- test_database.with_rollback(ctx)
+
+  let db = context.db_conn(ctx)
+  let repo = contacts_repository.new(db)
+  let assert Ok(_) =
+    contact_factory.new()
+    |> contact_factory.with_first_name("Alice")
+    |> contact_factory.with_last_name("Smith")
+    |> contact_factory.build()
+    |> repo.create
+  let assert Ok(_) =
+    contact_factory.new()
+    |> contact_factory.with_first_name("Bob")
+    |> contact_factory.with_last_name("Smithson")
+    |> contact_factory.build()
+    |> repo.create
+  let assert Ok(_) =
+    contact_factory.new()
+    |> contact_factory.with_first_name("Carol")
+    |> contact_factory.with_last_name("Jones")
+    |> contact_factory.build()
+    |> repo.create
+
+  let response =
+    simulate.request(http.Get, "/api/contacts?search=smith")
+    |> router.handle_request(ctx)
+
+  assert response.status == 200
+
+  let body = simulate.read_body(response)
+  let assert Ok(#(contacts, _)) = json.parse(body, page_decoder())
+
+  assert list.length(contacts) == 2
+  assert list.all(contacts, fn(c) {
+    c.last_name == "Smith" || c.last_name == "Smithson"
+  })
+}
+
+pub fn list_contacts_search_no_match_returns_empty_test() {
+  let ctx = test_context.get()
+  use ctx <- test_database.with_rollback(ctx)
+
+  let db = context.db_conn(ctx)
+  let repo = contacts_repository.new(db)
+  let assert Ok(_) =
+    contact_factory.new()
+    |> contact_factory.with_first_name("Alice")
+    |> contact_factory.build()
+    |> repo.create
+
+  let response =
+    simulate.request(http.Get, "/api/contacts?search=xyzzy")
+    |> router.handle_request(ctx)
+
+  assert response.status == 200
+
+  let body = simulate.read_body(response)
+  let assert Ok(#(contacts, _)) = json.parse(body, page_decoder())
+
+  assert contacts == []
+}
+
+pub fn list_contacts_search_combined_with_stage_filter_test() {
+  let ctx = test_context.get()
+  use ctx <- test_database.with_rollback(ctx)
+
+  let db = context.db_conn(ctx)
+  let repo = contacts_repository.new(db)
+  let assert Ok(_) =
+    contact_factory.new()
+    |> contact_factory.with_first_name("Alice")
+    |> contact_factory.with_stage(contact.LeadStage)
+    |> contact_factory.build()
+    |> repo.create
+  let assert Ok(_) =
+    contact_factory.new()
+    |> contact_factory.with_first_name("Alice")
+    |> contact_factory.with_stage(contact.CustomerStage)
+    |> contact_factory.build()
+    |> repo.create
+  let assert Ok(_) =
+    contact_factory.new()
+    |> contact_factory.with_first_name("Bob")
+    |> contact_factory.with_stage(contact.LeadStage)
+    |> contact_factory.build()
+    |> repo.create
+
+  let response =
+    simulate.request(http.Get, "/api/contacts?search=alice&stage=lead")
+    |> router.handle_request(ctx)
+
+  assert response.status == 200
+
+  let body = simulate.read_body(response)
+  let assert Ok(#(contacts, _)) = json.parse(body, page_decoder())
+
+  assert list.length(contacts) == 1
+  let assert [c] = contacts
+  assert c.first_name == "Alice"
+  assert c.stage == contact.LeadStage
 }

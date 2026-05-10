@@ -1,3 +1,4 @@
+import gleam/dynamic/decode
 import gleam/json
 import gleam/option.{type Option}
 
@@ -16,4 +17,13 @@ pub fn encode_cursor(cursor: Cursor) -> json.Json {
     #("value", json.string(cursor.value)),
     #("id", json.int(cursor.id)),
   ])
+}
+
+pub fn cursor_from_string(s: String) -> option.Option(Cursor) {
+  let decoder = {
+    use value <- decode.field("value", decode.string)
+    use id <- decode.field("id", decode.int)
+    decode.success(Cursor(value:, id:))
+  }
+  json.parse(s, decoder) |> option.from_result
 }

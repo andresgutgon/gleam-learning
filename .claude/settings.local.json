@@ -17,7 +17,29 @@
       "Bash(xargs ls *)",
       "Bash(gleam add *)",
       "Bash(xargs cat *)",
-      "Bash(gleam *)"
+      "Bash(gleam *)",
+      "Bash(bun upgrade *)",
+      "Bash(grep -E \"\\\\.\\(gleam|css|html\\)$\")",
+      "WebFetch(domain:packages.gleam.run)",
+      "WebFetch(domain:hexdocs.pm)",
+      "WebFetch(domain:github.com)",
+      "Read(//Users/andres/.claude/**)",
+      "Bash(command -v agent-browser)",
+      "Bash(agent-browser --help)",
+      "Bash(agent-browser skills *)",
+      "Bash(agent-browser open *)",
+      "Bash(agent-browser wait *)",
+      "Bash(agent-browser screenshot *)",
+      "Bash(agent-browser eval '\\(\\(\\) => { *)",
+      "Bash(agent-browser eval *)",
+      "Bash(curl -s http://localhost:1234/client.dev.js)",
+      "Bash(grep -E \"\\\\.\\(gleam|toml\\)$\"k)",
+      "Bash(pnpm install *)",
+      "Bash(pnpm approve-builds *)",
+      "Bash(pnpm test *)"
     ]
+  },
+  "enabledPlugins": {
+    "frontend-design@claude-plugins-official": true
   }
 }
