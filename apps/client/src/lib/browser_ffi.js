@@ -4,6 +4,15 @@ export function window_location_origin() {
   return window.location.origin;
 }
 
+export function window_inner_height() {
+  return window.innerHeight;
+}
+
+export function debug_log(label, value) {
+  console.log("[gleam-debug]", label, value);
+  return null;
+}
+
 export function history_back() {
   window.history.back();
 }
@@ -29,7 +38,9 @@ export function scroll_window_to(offset) {
   // Double RAF: modem's popstate handler schedules scrollTo(0,0) in a single
   // RAF. Nesting two RAFs ensures we fire in the frame after modem's, so our
   // restore wins.
-  requestAnimationFrame(() => requestAnimationFrame(() => window.scrollTo(0, offset)));
+  requestAnimationFrame(() =>
+    requestAnimationFrame(() => window.scrollTo(0, offset)),
+  );
 }
 
 export function mark_came_from_contacts() {

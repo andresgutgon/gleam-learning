@@ -1,6 +1,12 @@
 @external(javascript, "./browser_ffi.js", "window_location_origin")
 pub fn window_location_origin() -> String
 
+@external(javascript, "./browser_ffi.js", "window_inner_height")
+pub fn window_inner_height() -> Int
+
+@external(javascript, "./browser_ffi.js", "debug_log")
+pub fn debug_log(label: String, value: Int) -> Nil
+
 @external(javascript, "./browser_ffi.js", "history_back")
 pub fn history_back() -> Nil
 

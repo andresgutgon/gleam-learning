@@ -186,17 +186,22 @@ pub fn view_virtual_row(
   row: row,
   template: String,
   on_row_click: Option(fn(row) -> msg),
+  extra_attrs: List(attribute.Attribute(msg)),
 ) -> Element(msg) {
-  let base_attrs = [
-    attribute.style("grid-template-columns", template),
-    attribute.class(
-      "grid items-center gap-4 h-14 px-4"
-      <> " border-b border-border"
-      <> " border-l-2 border-l-transparent"
-      <> " hover:border-l-faff-pink hover:bg-faff-pink/5"
-      <> " transition-colors cursor-pointer",
-    ),
-  ]
+  let base_attrs =
+    list.append(
+      [
+        attribute.style("grid-template-columns", template),
+        attribute.class(
+          "grid items-center gap-4 h-14 px-4"
+          <> " border-b border-border"
+          <> " border-l-2 border-l-transparent"
+          <> " hover:border-l-faff-pink hover:bg-faff-pink/5"
+          <> " transition-colors cursor-pointer",
+        ),
+      ],
+      extra_attrs,
+    )
   let attrs = case on_row_click {
     option.Some(handler) ->
       list.append(base_attrs, [event.on_click(handler(row))])

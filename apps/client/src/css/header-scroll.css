@@ -4,15 +4,15 @@ header {
 }
 
 header > div {
-  backdrop-filter: blur(40px) saturate(200%);
-  -webkit-backdrop-filter: blur(40px) saturate(200%);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   background-color: var(--color-underwater-blue);
   transition: background-color 300ms ease;
 }
 
 @container scroll-state(stuck: top) {
   header > div {
-    background-color: rgb(255 251 232 / 0.25);
+    background-color: oklch(from var(--color-gleam-white) l c h / 0.05);
   }
 }
 

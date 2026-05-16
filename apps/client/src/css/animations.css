@@ -14,3 +14,15 @@
   /* Content: subtle fade+slide when first mounted */
   --animate-content-appear:  content-appear  0.2s  ease-out both;
 }
+
+/* Detail page is rendered as a fixed-position overlay above the contacts
+   page; the root crossfade animates only the overlay's appearance/removal.
+   `contact-name` and `contact-stage` get their own shared-element morph. */
+
+/* While the detail overlay is open, lock the document scroll so the user
+   can't scroll the contacts list underneath — that would corrupt the
+   virtualizer's scroll_offset and break the back transition. The overlay
+   has its own overflow:auto scroll context for its own content. */
+html.scroll-locked {
+  overflow: hidden;
+}
