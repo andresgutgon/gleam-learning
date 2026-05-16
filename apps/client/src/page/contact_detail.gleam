@@ -5,6 +5,7 @@ import gleam/result
 import gquery.{type Entry}
 import gquery/lustre as gq
 import lib/browser
+import virtual_list/page_transition as vt_pt
 import lib/cache
 import lib/error.{type ApiError}
 import lustre/attribute
@@ -70,7 +71,10 @@ pub fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
   case msg {
     UserClickedBack ->
       case browser.check_came_from_contacts() {
-        True -> #(model, effect.from(fn(_) { browser.history_back() }))
+        True -> #(
+          model,
+          effect.from(fn(_) { vt_pt.navigate_back(model.contact_id) }),
+        )
         False -> #(
           model,
           modem.push(
@@ -91,7 +95,6 @@ pub fn view(_model: Model, entry: Entry(Contact, ApiError)) -> Element(Msg) {
           "flex items-center gap-1.5 text-sm text-muted-foreground"
           <> " hover:text-foreground transition-colors",
         ),
-        attribute.attribute("data-vt", "back"),
         event.on_click(UserClickedBack),
       ],
       [
@@ -121,7 +124,6 @@ fn view_skeleton() -> Element(Msg) {
             attribute.class(
               "h-8 w-56 rounded-md bg-muted animate-pulse leading-tight",
             ),
-            attribute.attribute("data-vt", "contact-name"),
             attribute.style("view-transition-name", "contact-name"),
           ],
           [],
@@ -129,7 +131,6 @@ fn view_skeleton() -> Element(Msg) {
         html.div(
           [
             attribute.class("h-5 w-20 rounded-full bg-muted animate-pulse"),
-            attribute.attribute("data-vt", "contact-stage"),
             attribute.style("view-transition-name", "contact-stage"),
           ],
           [],
@@ -148,7 +149,6 @@ fn view_skeleton() -> Element(Msg) {
         html.div(
           [
             attribute.class("h-4 w-48 rounded bg-muted animate-pulse"),
-            attribute.attribute("data-vt", "contact-email"),
             attribute.style("view-transition-name", "contact-email"),
           ],
           [],
@@ -175,17 +175,13 @@ fn view_contact(contact: Contact) -> Element(Msg) {
               attribute.class(
                 "text-2xl font-bold text-foreground leading-tight",
               ),
-              attribute.attribute("data-vt", "contact-name"),
               attribute.style("view-transition-name", "contact-name"),
             ],
             [element.text(contact.first_name <> " " <> contact.last_name)],
           ),
         ]),
         html.div(
-          [
-            attribute.attribute("data-vt", "contact-stage"),
-            attribute.style("view-transition-name", "contact-stage"),
-          ],
+          [attribute.style("view-transition-name", "contact-stage")],
           [stage_badge.view(contact.stage)],
         ),
       ]),
@@ -198,7 +194,6 @@ fn view_contact(contact: Contact) -> Element(Msg) {
             attribute.class(
               "text-sm text-foreground hover:text-faff-pink transition-colors",
             ),
-            attribute.attribute("data-vt", "contact-email"),
             attribute.style("view-transition-name", "contact-email"),
           ],
           [element.text(contact.email)],

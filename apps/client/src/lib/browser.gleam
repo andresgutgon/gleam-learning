@@ -36,13 +36,3 @@ pub fn mark_came_from_contacts() -> Nil
 
 @external(javascript, "./browser_ffi.js", "check_came_from_contacts")
 pub fn check_came_from_contacts() -> Bool
-
-@external(javascript, "./browser_ffi.js", "navigate_with_view_transition")
-pub fn navigate_with_view_transition(
-  contact_id: Int,
-  path: String,
-  then_fn: fn() -> Nil,
-) -> Nil
-
-@external(javascript, "./browser_ffi.js", "navigate_back_with_view_transition")
-pub fn navigate_back_with_view_transition(contact_id: Int) -> Nil

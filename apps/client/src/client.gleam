@@ -3,6 +3,7 @@ import lustre/effect.{type Effect}
 import lustre/element.{type Element}
 import modem
 import router
+import virtual_list/page_transition as vt_pt
 
 pub fn main() {
   let app = lustre.application(init, update, view)
@@ -16,6 +17,9 @@ pub type Msg {
 fn init(_) -> #(router.Model, Effect(Msg)) {
   let #(model, router_effect) = router.init(modem.initial_uri())
   let effects = [
+    effect.from(fn(_) {
+      vt_pt.install("^(/contacts|/)$", "^/contacts/(\\d+)$")
+    }),
     modem.init(router.on_url_change) |> effect.map(RouterSentMsg),
     router_effect |> effect.map(RouterSentMsg),
   ]

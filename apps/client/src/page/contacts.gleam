@@ -9,6 +9,7 @@ import gleam/uri.{type Uri}
 import gquery.{type Entry}
 import gquery/lustre as gq
 import lib/browser
+import virtual_list/page_transition as vt_pt
 import lib/cache.{type Cache, type InfiniteList}
 import lib/contacts/filtering
 import lib/contacts/query_builder
@@ -285,7 +286,7 @@ pub fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
         model,
         effect.from(fn(_) {
           browser.save_scroll_to_history()
-          browser.navigate_with_view_transition(id, path, fn() {
+          vt_pt.navigate_forward(id, path, fn() {
             browser.mark_came_from_contacts()
           })
         }),
@@ -515,7 +516,12 @@ fn render_contact_row(
         contact,
         template,
         option.Some(fn(c: Contact) { UserClickedContact(c.id) }),
-        [attribute.attribute("data-contact-id", int.to_string(contact.id))],
+        [
+          attribute.attribute(
+            vt_pt.item_id_attr,
+            int.to_string(contact.id),
+          ),
+        ],
       )
   }
 }
@@ -547,8 +553,9 @@ fn columns(
         html.span(
           [
             attribute.class(
-              "text-sm font-medium text-foreground truncate w-full min-w-0 vt-contact-name",
+              "text-sm font-medium text-foreground truncate w-full min-w-0",
             ),
+            attribute.attribute(vt_pt.vt_field_attr, "contact-name"),
           ],
           [element.text(c.first_name <> " " <> c.last_name)],
         )
@@ -558,9 +565,10 @@ fn columns(
       header: table.plain_header("Stage"),
       width: "140px",
       cell: table.Custom(fn(c: Contact) {
-        html.div([attribute.class("vt-contact-stage")], [
-          stage_badge.view(c.stage),
-        ])
+        html.div(
+          [attribute.attribute(vt_pt.vt_field_attr, "contact-stage")],
+          [stage_badge.view(c.stage)],
+        )
       }),
     ),
     table.Column(
@@ -575,9 +583,8 @@ fn columns(
       cell: table.Custom(fn(c: Contact) {
         html.span(
           [
-            attribute.class(
-              "text-sm text-muted-foreground truncate block vt-contact-email",
-            ),
+            attribute.class("text-sm text-muted-foreground truncate block"),
+            attribute.attribute(vt_pt.vt_field_attr, "contact-email"),
           ],
           [element.text(c.email)],
         )
